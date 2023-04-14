@@ -38,7 +38,7 @@ In Beta, so expect bugs.
 
 ## Usage
 
-1. Download the latest release from the [releases page](https://github.com/YTP-Plus/YTPPlusPlusPlus.git).
+1. Download the latest release from the [releases page](https://github.com/YTP-Plus/YTPPlusPlusPlus/releases).
 1. Extract the zip file to a directory that does not include spaces in the path.
     - For example, `C:\YTPPlusPlusPlus` is a good path, but `C:\Program Files\YTPPlusPlusPlus` is not.
 1. Run `YTP+++.exe`.
@@ -103,6 +103,7 @@ Please open an issue or pull request if you have any suggestions or bug reports.
 - [MonoGame](https://www.monogame.net/)
 - [FFmpeg](https://ffmpeg.org/)
 - [Newtonsoft.Json](https://www.newtonsoft.com/json)
+- [Python](https://www.python.org/)
 - [Munro](https://www.tenbytwenty.com/#munro)
 
 ## License
