@@ -326,7 +326,7 @@ namespace YTPPlusPlusPlus
                 // Update animation
                 staticAnim++;
                 if (staticAnim > 12)
-                    staticAnim = 1;
+                    staticAnim = 0;
                 // Update lastAnimTime
                 lastAnimTime = gameTime.TotalGameTime.TotalMilliseconds;
             }
@@ -468,6 +468,10 @@ namespace YTPPlusPlusPlus
                                         GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                                     }
                                     return true;
+                                }
+                                else
+                                {
+                                    add = true;
                                 }
                             }
                             else if (button1Rect.Contains(MouseInput.MouseState.Position))

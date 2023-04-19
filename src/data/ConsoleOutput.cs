@@ -9,12 +9,12 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public static class ConsoleOutput
     {
-        public static List<string> output { get; } = new List<string>();
-        private static int maxLines = 25;
+        public static readonly List<string> output = new List<string>();
+        private static readonly int maxLines = 25;
+        private static readonly int lineLength = 70;
         public static void WriteLine(string line)
         {
-            // Wrap lines at 74 characters.
-            int lineLength = 75;
+            // Wrap lines.
             int lineCount = line.Length / lineLength;
             if (line.Length % lineLength > 0)
                 lineCount++;
@@ -26,7 +26,8 @@ namespace YTPPlusPlusPlus
                     end = line.Length;
                 output.Add(line.Substring(start, end - start));
             }
-            if (output.Count > maxLines)
+            // Remove old lines.
+            while (output.Count > maxLines)
                 output.RemoveAt(0);
             // DEBUG: Write to file.
             try

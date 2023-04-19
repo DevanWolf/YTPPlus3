@@ -74,12 +74,33 @@ namespace YTPPlusPlusPlus
                 {
                     case 2: // left click
                         GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        Global.generatorFactory.CancelGeneration();
+                        Global.generatorFactory.CancelGeneration(true);
                         return true;
                 }
                 return false;
             }));
             // ADVANCED MODE
+            controllerAdvanced.Add("OverlayChance", new Dial("Overlay Chance", "How often overlays are rolled.", new Vector2(139, 60+19*5), int.Parse(SaveData.saveValues["OverlayChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["OverlayChance"]);
+                SaveData.saveValues["OverlayChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["OverlayChance"]))
+                    SaveData.Save();
+                return false;
+            }));
+            controllerAdvanced.Add("TransitionChance", new Dial("Transition Chance", "How often transitions are rolled.", new Vector2(139, 60+19*4), int.Parse(SaveData.saveValues["TransitionChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["TransitionChance"]);
+                SaveData.saveValues["TransitionChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["TransitionChance"]))
+                    SaveData.Save();
+                return false;
+            }));
+            controllerAdvanced.Add("EffectChance", new Dial("Effect Chance", "How often any plugin effect is rolled.", new Vector2(139, 60+19*3), int.Parse(SaveData.saveValues["EffectChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["EffectChance"]);
+                SaveData.saveValues["EffectChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["EffectChance"]))
+                    SaveData.Save();
+                return false;
+            }));
             controllerAdvanced.Add("Height", new TextEntry("Height", "How tall the result is.", SaveData.saveValues["VideoHeight"], new Vector2(139, 60+19*2), 24, 4, 2, (int i) => {
                 string oldValue = SaveData.saveValues["VideoHeight"];
                 SaveData.saveValues["VideoHeight"] = controllerAdvanced.interactables["Height"].Tooltip;
@@ -145,7 +166,7 @@ namespace YTPPlusPlusPlus
                 return false;
             }));
             // Add text entries
-            controller.Add("ProjectTitle", new TextEntry("Project Title", "The name of the generated product.", SaveData.saveValues["ProjectTitle"], new Vector2(139, 60+19*7), 105, 20, 5, (int i) => {
+            controller.Add("ProjectTitle", new TextEntry("Random Seed", "The project name and generation seed.", SaveData.saveValues["ProjectTitle"], new Vector2(139, 60+19*7), 101, 20, 5, (int i) => {
                 string oldValue = SaveData.saveValues["ProjectTitle"];
                 SaveData.saveValues["ProjectTitle"] = controller.interactables["ProjectTitle"].Tooltip;
                 if(oldValue != SaveData.saveValues["ProjectTitle"])
@@ -159,14 +180,14 @@ namespace YTPPlusPlusPlus
                     SaveData.Save();
                 return false;
             }));
-            controller.Add("MaxStreamDuration", new TextEntry("Maximum Stream Duration", "End of random length.", SaveData.saveValues["MinStreamDuration"], new Vector2(139, 60+19*5), 26, 5, 2, (int i) => {
+            controller.Add("MaxStreamDuration", new TextEntry("Maximum Stream Duration", "End of random length.", SaveData.saveValues["MaxStreamDuration"], new Vector2(139, 60+19*5), 26, 5, 2, (int i) => {
                 string oldValue = SaveData.saveValues["MinStreamDuration"];
                 SaveData.saveValues["MinStreamDuration"] = controller.interactables["MaxStreamDuration"].Tooltip;
                 if(oldValue != SaveData.saveValues["MinStreamDuration"])
                     SaveData.Save();
                 return false;
             }));
-            controller.Add("MinStreamDuration", new TextEntry("Minimum Stream Duration", "Start of random length.", SaveData.saveValues["MaxStreamDuration"], new Vector2(139, 60+19*4), 26, 5, 2, (int i) => {
+            controller.Add("MinStreamDuration", new TextEntry("Minimum Stream Duration", "Start of random length.", SaveData.saveValues["MinStreamDuration"], new Vector2(139, 60+19*4), 26, 5, 2, (int i) => {
                 string oldValue = SaveData.saveValues["MaxStreamDuration"];
                 SaveData.saveValues["MaxStreamDuration"] = controller.interactables["MinStreamDuration"].Tooltip;
                 if(oldValue != SaveData.saveValues["MaxStreamDuration"])

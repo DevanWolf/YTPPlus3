@@ -19,6 +19,11 @@ namespace YTPPlusPlusPlus
         Paused,
         Stopped,
     }
+    public enum MusicActive
+    {
+        Theme, // Funtastic Power! & KiwifruitDev - 300 This Is Sparta (YTP+ Mix)
+        Theme2, // Bobby I Guess - A Nonsensical Song
+    }
     public class UserInterface : Game
     {
         public static UserInterface? instance;
@@ -26,6 +31,7 @@ namespace YTPPlusPlusPlus
         private SpriteBatch? _spriteBatch;
         private WindowState _windowState = WindowState.Focused;
         private MusicState _musicState = MusicState.Stopped;
+        private MusicActive _musicActive = MusicActive.Theme;
         public UserInterface()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -58,6 +64,8 @@ namespace YTPPlusPlusPlus
             GlobalContent.LoadDefaultContent(Content, GraphicsDevice);
             // Play startup sound.
             GlobalContent.GetSound("Start").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+            // Find music.
+            FindMusic();
             // Load all screen content.
             ScreenManager.LoadContent(Content, GraphicsDevice);
             base.LoadContent();
@@ -70,54 +78,94 @@ namespace YTPPlusPlusPlus
             GlobalContent.UnloadContent();
             base.UnloadContent();
         }
+        private void FindMusic()
+        {
+            int music = int.Parse(SaveData.saveValues["ActiveMusic"]);
+            if(!Global.shuffled && SaveData.saveValues["ShuffleMusic"] == "true")
+            {
+                // Shuffle music.
+                Global.shuffled = true;
+                music = Global.generatorFactory.globalRandom.Next(0, Enum.GetNames(typeof(MusicActive)).Length);
+                SaveData.saveValues["ActiveMusic"] = music.ToString();
+                SaveData.Save();
+            }
+            // Make sure music is in range.
+            if(music < 0 || music >= Enum.GetNames(typeof(MusicActive)).Length)
+            {
+                music = 0;
+                SaveData.saveValues["ActiveMusic"] = music.ToString();
+                SaveData.Save();
+            }
+        }
         protected override void Update(GameTime gameTime)
         {
             // Play music after 500ms.
             if(gameTime.TotalGameTime.TotalMilliseconds > 2500)
             {
-                switch(_windowState)
+                // Exchange music if it's not the same as the active music.
+                if(_musicActive != (MusicActive)int.Parse(SaveData.saveValues["ActiveMusic"]))
                 {
-                    case WindowState.Focused:
-                        if(_musicState == MusicState.Playing)
-                        {
-                            // Fade in music.
-                            float vol = int.Parse(SaveData.saveValues["MusicVolume"]) / 100f;
-                            if(MediaPlayer.Volume < vol)
-                                MediaPlayer.Volume += 0.1f;
-                            // Clamp music if it's over the volume level.
-                            if(MediaPlayer.Volume > vol)
-                                MediaPlayer.Volume = vol;
-                        }
-                        else if(_musicState == MusicState.Stopped)
-                        {
-                            MediaPlayer.Play(GlobalContent.GetSong("Theme"));
-                            _musicState = MusicState.Playing;
-                        }
-                        else if(_musicState == MusicState.Paused)
-                        {
-                            MediaPlayer.Resume();
-                            _musicState = MusicState.Playing;
-                        }
-                        // Loop music.
-                        if(MediaPlayer.State == MediaState.Stopped)
-                        {
-                            MediaPlayer.Play(GlobalContent.GetSong("Theme"));
-                        }
-
-                        break;
-                    case WindowState.Unfocused:
-                        if(_musicState == MusicState.Playing)
-                        {
-                            // Fade out music.
-                            if(MediaPlayer.Volume > 0.1f)
-                                MediaPlayer.Volume -= 0.1f;
-                            else
+                    _musicActive = (MusicActive)int.Parse(SaveData.saveValues["ActiveMusic"]);
+                    MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                    MediaPlayer.Volume = 0f;
+                }
+                    
+                if(Global.exiting)
+                {
+                    if(MediaPlayer.Volume > 0.01f)
+                        MediaPlayer.Volume -= 0.01f;
+                    else
+                    {
+                        MediaPlayer.Pause();
+                        _musicState = MusicState.Paused;
+                    }
+                }
+                else
+                {
+                    switch(_windowState)
+                    {
+                        case WindowState.Focused:
+                            if(_musicState == MusicState.Playing)
                             {
-                                MediaPlayer.Pause();
-                                _musicState = MusicState.Paused;
+                                // Fade in music.
+                                float vol = int.Parse(SaveData.saveValues["MusicVolume"]) / 100f;
+                                if(MediaPlayer.Volume < vol)
+                                    MediaPlayer.Volume += 0.1f;
+                                // Clamp music if it's over the volume level.
+                                if(MediaPlayer.Volume > vol)
+                                    MediaPlayer.Volume = vol;
                             }
-                        }
-                        break;
+                            else if(_musicState == MusicState.Stopped)
+                            {
+                                MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                                _musicState = MusicState.Playing;
+                            }
+                            else if(_musicState == MusicState.Paused)
+                            {
+                                MediaPlayer.Resume();
+                                _musicState = MusicState.Playing;
+                            }
+                            // Loop music.
+                            if(MediaPlayer.State == MediaState.Stopped)
+                            {
+                                MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                            }
+
+                            break;
+                        case WindowState.Unfocused:
+                            if(_musicState == MusicState.Playing)
+                            {
+                                // Fade out music.
+                                if(MediaPlayer.Volume > 0.1f)
+                                    MediaPlayer.Volume -= 0.1f;
+                                else
+                                {
+                                    MediaPlayer.Pause();
+                                    _musicState = MusicState.Paused;
+                                }
+                            }
+                            break;
+                    }
                 }
             }
             // Update window state.

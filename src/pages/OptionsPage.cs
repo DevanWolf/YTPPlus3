@@ -26,10 +26,39 @@ namespace YTPPlusPlusPlus
         }
         public void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
+            // Add labels
+            controller.Add("DialLabel", new Label("Click and rotate dials slowly.", new Vector2(139, 60)));
+            controller.Add("MusicLabel", new Label("On: 300 This Is Sparta! (YTP+ Mix)", new Vector2(139, 51+19*6)));
+            controller.Add("MusicLabel2", new Label("by Funtastic Power! & KiwifruitDev", new Vector2(139, 51+16+19*6)));
+            controller.Add("MusicLabel3", new Label("Off: A Nonsensical Song", new Vector2(139, 51+32+19*6)));
+            controller.Add("MusicLabel4", new Label("by Bobby I Guess", new Vector2(139, 51+48+19*6)));
+            // Add switches
+            controller.Add("ShuffleMusic", new Switch("Shuffle", "Shuffle the music on startup.", new Vector2(139+85, 51+19*5), (int i) => {
+                bool switchState = (i & 256) != 0;
+                if((i & 2) != 0)
+                {
+                    string oldValue = SaveData.saveValues["ShuffleMusic"];
+                    SaveData.saveValues["ShuffleMusic"] = switchState.ToString().ToLower();
+                    if(oldValue != SaveData.saveValues["ShuffleMusic"])
+                        SaveData.Save();
+                }
+                return switchState;
+            }, SaveData.saveValues["ShuffleMusic"] == "true"));
+            controller.Add("ActiveMusic", new Switch("Legacy Music", "Switch between the old and new music.", new Vector2(139, 51+19*5), (int i) => {
+                bool switchState = (i & 256) != 0;
+                if((i & 2) != 0)
+                {
+                    string oldValue = SaveData.saveValues["ActiveMusic"];
+                    SaveData.saveValues["ActiveMusic"] = switchState.ToString().ToLower() == "true" ? "0" : "1";
+                    if(oldValue != SaveData.saveValues["ActiveMusic"])
+                        SaveData.Save();
+                }
+                return switchState;
+            }, SaveData.saveValues["ActiveMusic"] == "0"));
             // Add dials
             controller.Add("BGSaturation", new Dial("Background Saturation", "Adjust color in the animated background.", new Vector2(139, 51+19*4), int.Parse(SaveData.saveValues["BackgroundSaturation"]), 0, 100, (int i) => {
                 int oldValue = int.Parse(SaveData.saveValues["BackgroundSaturation"]);
-                SaveData.saveValues["BackgroundSaturation"] = (i + 1).ToString();
+                SaveData.saveValues["BackgroundSaturation"] = i.ToString();
                 if(oldValue != int.Parse(SaveData.saveValues["BackgroundSaturation"]))
                     SaveData.Save();
                 return false;
@@ -55,8 +84,6 @@ namespace YTPPlusPlusPlus
                     SaveData.Save();
                 return false;
             }));
-            // Add labels
-            controller.Add("DialLabel", new Label("Click and rotate dials slowly.", new Vector2(139, 60)));
             // Interactable
             controller.LoadContent(contentManager, graphicsDevice);
         }

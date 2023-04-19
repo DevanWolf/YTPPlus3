@@ -44,18 +44,24 @@ namespace YTPPlusPlusPlus
             if(LibraryData.GetFileCount(DefaultLibraryTypes.Material) == 0)
             {
                 ConsoleOutput.WriteLine("No material files found in library.");
-                progressState = ProgressState.Failed;
                 failureReason = "No material files found in library.";
-                progressText = "";
-                generatorActive = false;
+                progressText = failureReason;
+                CancelGeneration();
                 return;
             }
 
             // Set global random with seed.
             progressText = "Planting seeds...";
-            int seed = int.Parse(SaveData.saveValues["RandomSeed"]);
-            if(seed != 0)
-                globalRandom = new Random(seed);
+            //int seed = int.Parse(SaveData.saveValues["RandomSeed"]);
+            // Convert ProjectTitle to int seed
+            string seedString = SaveData.saveValues["ProjectTitle"];
+            int seed = 0;
+            foreach (char c in seedString)
+            {
+                seed += (int)c;
+            }
+            ConsoleOutput.WriteLine("Seed: " + seed);
+            globalRandom = new Random(seed);
 
             string tempOutput = Path.Combine(Utilities.temporaryDirectory, "tempoutput.mp4");
             int maxClips = int.Parse(SaveData.saveValues["MaxClipCount"]);
@@ -107,10 +113,10 @@ namespace YTPPlusPlusPlus
                         return;
                     if(!intro)
                     {
-                        bool rolledForOverlay = RandomInt(0, 30) == 0 && bool.Parse(SaveData.saveValues["OverlaysEnabled"]);
+                        bool rolledForOverlay = RandomInt(0, 100) <= int.Parse(SaveData.saveValues["OverlayChance"]) && bool.Parse(SaveData.saveValues["OverlaysEnabled"]);
                         string overlayPath = "";
                         progress = Convert.ToInt32(((float)i / (float)maxClips));
-                        progressText = "Filming... (" + (i + 1) + " of " + maxClips + ")";
+                        progressText = "Clipping... (" + (i + 1) + " of " + maxClips + ")";
                         string sourceToPick = LibraryData.PickRandom(DefaultLibraryTypes.Material, globalRandom);
                         if(sourceToPick == "")
                         {
@@ -149,7 +155,8 @@ namespace YTPPlusPlusPlus
                         ConsoleOutput.WriteLine("Ending of clip " + i + ": " + endOfClip.ToString("0.#########################", new CultureInfo("en-US")) + ", in seconds: ");
                         // Insert transition if rolled, ensure that there is a transition as well.
                         //bool alreadySnipped = false;
-                        if (!rolledForOverlay && RandomInt(0, 15) == 15 && bool.Parse(SaveData.saveValues["TransitionsEnabled"]) && LibraryData.GetFileCount(DefaultLibraryTypes.Transition) > 0)
+                        bool rolledForTransition = RandomInt(0, 100) <= int.Parse(SaveData.saveValues["TransitionChance"]) && bool.Parse(SaveData.saveValues["TransitionsEnabled"]);
+                        if (!rolledForOverlay && rolledForTransition && LibraryData.GetFileCount(DefaultLibraryTypes.Transition) > 0)
                         {
                             string transitionPath = LibraryData.PickRandom(DefaultLibraryTypes.Transition, globalRandom);
                             if(transitionPath == "")
@@ -166,6 +173,8 @@ namespace YTPPlusPlusPlus
                             // No transition, just snip the video.
                             Utilities.SnipVideo(sourceToPick, startOfClip, endOfClip, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
                         }
+                        if(!rolledForOverlay && rolledForTransition)
+                            ConsoleOutput.WriteLine("No transitions found in library.");
                         if (vidThreadWorker?.CancellationPending == true)
                             return;
                         // Parse overlay if rolled.
@@ -182,22 +191,22 @@ namespace YTPPlusPlusPlus
                             //if(!alreadySnipped)
                                 //Utilities.SnipVideo(sourceToPick, startOfClip, endOfClip, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
                             // Now we'll snip the overlay with another random duration.
-                            float startOfOverlay = RandomFloat(0f, outputDuration - float.Parse(SaveData.saveValues["MinStreamDuration"]));
-                            float endOfOverlay = startOfOverlay + RandomFloat(float.Parse(SaveData.saveValues["MinStreamDuration"]), float.Parse(SaveData.saveValues["MaxStreamDuration"])) * 2;
+                            float overlayDuration = float.Parse(Utilities.GetLength(overlayPath), NumberStyles.Any, new CultureInfo("en-US"));
+                            float startOfOverlay = RandomFloat(0f, overlayDuration - float.Parse(SaveData.saveValues["MinStreamDuration"]));
+                            float endOfOverlay = startOfOverlay + RandomFloat(float.Parse(SaveData.saveValues["MinStreamDuration"]), float.Parse(SaveData.saveValues["MaxStreamDuration"]));
                             Utilities.SnipVideo(overlayPath, startOfOverlay, endOfOverlay, Path.Combine(Utilities.temporaryDirectory, "video" + i + "_tempoverlay.mp4"));
                             Utilities.OverlayVideo(Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"), Path.Combine(Utilities.temporaryDirectory, "video" + i + "_tempoverlay.mp4"));
-                            File.Delete(Path.Combine(Utilities.temporaryDirectory, "video" + i + "_tempoverlay.mp4"));
                             // The result is a video with an overlay at random points.
                         }
                         if (vidThreadWorker?.CancellationPending == true)
                             return;
-                        if(SaveData.saveValues["PluginTestEnabled"] != "true")
+                        if(!rolledForTransition && SaveData.saveValues["PluginTestEnabled"] != "true")
                         {
                             int numberOfPlugins = PluginHandler.GetPluginCount();
                             if(numberOfPlugins > 0)
                             {
-                                // Roll for effect, there should be a significant chance of no effect (>60%)
-                                if(RandomInt(0, 100) > 60)
+                                // Roll for effect
+                                if(RandomInt(0, 100) <= int.Parse(SaveData.saveValues["EffectChance"]))
                                 {
                                     progressText = "Baking effects... (" + (i + 1) + " of " + maxClips + ")";
                                     // We rolled for an effect, let's pick one.
@@ -231,13 +240,11 @@ namespace YTPPlusPlusPlus
                     {
                         if (vidThreadWorker?.CancellationPending == true)
                             return;
-                        progressText = "Closing the film spool... (" + (maxClips + 1) + " of " + maxClips + ")";
                         maxClips++;
+                        progressText = "Closing the film spool... (" + maxClips + " of " + maxClips + ")";
                         ConsoleOutput.WriteLine("Outro clip enabled, adding 1 to max clips. New max clips is " + maxClips + ".");
                         ConsoleOutput.WriteLine("STARTING CLIP " + "video" + maxClips);
-                        progress = Convert.ToInt32(((float)maxClips / (float)maxClips));
-                        progressText = "Rendering clip " + maxClips + " of " + maxClips + "...";
-                        Utilities.CopyVideo(outroPath, Path.Combine(Utilities.temporaryDirectory, Utilities.temporaryDirectory, "video" + maxClips + ".mp4"));
+                        Utilities.CopyVideo(outroPath, Path.Combine(Utilities.temporaryDirectory, "video" + maxClips + ".mp4"));
                         maxClips++;
                     }
                 }
@@ -264,19 +271,11 @@ namespace YTPPlusPlusPlus
             }
             catch(Exception ex)
             {
-                progressText = "";
                 progressState = ProgressState.Failed;
                 failureReason = ex.Message;
+                progressText = failureReason;
                 ConsoleOutput.WriteLine("An error occurred while generating the video.");
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
             }
             //CleanUp();
         }
@@ -312,17 +311,21 @@ namespace YTPPlusPlusPlus
         {
             StartGeneration(progressReporter, completedReporter);
         }
-        public void CancelGeneration()
+        public void CancelGeneration(bool user = false)
         {
             if(vidThreadWorker != null)
             {
-                vidThreadWorker.ReportProgress(50);
-                vidThreadWorker.CancelAsync();
+                // Make sure it's not completed or cancelled already.
+                if(vidThreadWorker.IsBusy)
+                    vidThreadWorker.CancelAsync();
                 generatorActive = false;
-                progressText = "";
                 progressState = ProgressState.Failed;
-                failureReason = "Generation cancelled.";
-                ConsoleOutput.WriteLine("Generation cancelled.");
+                if(user)
+                {
+                    failureReason = "Generation cancelled.";
+                    progressText = failureReason;
+                    ConsoleOutput.WriteLine("Generation cancelled.");
+                }
 
             }
         }

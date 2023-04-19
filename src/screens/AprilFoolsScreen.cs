@@ -181,7 +181,8 @@ namespace YTPPlusPlusPlus
             "hellfire: Creating the original YTP+ software",
             "KiwifruitDev: Programming, UI, maintenance, Discord management",
             "nuppington: General help and Discord management",
-            "GMM: UI sound design and plugin development",
+            "GMM: UI sound effects, and plugin development",
+            "Bobby I Guess: UI music, general help",
             "DevanWolf: Providing support and creating fixes for YTP++",
             "Supositware: Creating YTP5K, a Twitter bot using YTP+ code",
             "DeeMacias: Plugin development and general help",
@@ -436,7 +437,7 @@ namespace YTPPlusPlusPlus
             spriteBatch.DrawString(font, creditRoll[currentCredit], new Vector2(GlobalGraphics.Scale(9), GlobalGraphics.Scale(9)), Color.Black);
             spriteBatch.DrawString(font, creditRoll[currentCredit], new Vector2(GlobalGraphics.Scale(8), GlobalGraphics.Scale(8)), Color.White);
             // Draw render progress on right side (pastime)
-            if(Global.generatorFactory.generatorActive)
+            if(Global.generatorFactory.progressText != "")
             {
                 textSize = font.MeasureString(SaveData.saveValues["ProjectTitle"]);
                 spriteBatch.DrawString(font, SaveData.saveValues["ProjectTitle"], new Vector2(GlobalGraphics.Scale(320) - textSize.X - GlobalGraphics.Scale(8), GlobalGraphics.Scale(9)), Color.Black);

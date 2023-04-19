@@ -15,6 +15,7 @@ namespace YTPPlusPlusPlus
         public static Mask mask = new();
         public static bool justCompletedRender = false;
         public static bool exiting = false;
+        public static bool shuffled = false;
         // YTP+ variables.
         public static GeneratorFactory generatorFactory = new GeneratorFactory();
     }

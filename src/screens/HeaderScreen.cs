@@ -123,7 +123,7 @@ namespace YTPPlusPlusPlus
             Texture2D logo = GlobalContent.GetTexture("Logo");
             spriteBatch.Draw(logo, new Rectangle(GlobalGraphics.Scale(9), GlobalGraphics.Scale(10), GlobalGraphics.Scale(logo.Width), GlobalGraphics.Scale(logo.Height)), Color.White);
             // Draw rendering progress
-            if(Global.generatorFactory.generatorActive)
+            if(Global.generatorFactory.progressText != "")
             {
                 SpriteFont font = GlobalContent.GetFont("MunroSmall");
                 string rendering = SaveData.saveValues["ProjectTitle"];

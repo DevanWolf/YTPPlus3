@@ -39,6 +39,11 @@ namespace YTPPlusPlusPlus
             {"AprilFoolsFlappyBirdScore", "0"},
             {"MusicVolume", "100"},
             {"SoundEffectVolume", "100"},
+            {"ActiveMusic", "0"},
+            {"ShuffleMusic", "false"},
+            {"TransitionChance", "20"},
+            {"OverlayChance", "20"},
+            {"EffectChance", "60"},
         };
         private static string _saveFileName = "Options.json";
         public static bool Save()

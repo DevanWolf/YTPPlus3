@@ -37,6 +37,7 @@ namespace YTPPlusPlusPlus
             AddFont("MunroSmall", contentManager.Load<SpriteFont>("fonts/munro-small-x"+scale));
             // Load default songs.
             AddSong("Theme", contentManager.Load<Song>("music/theme"));
+            AddSong("Theme2", contentManager.Load<Song>("music/theme2"));
             // Create pixel shape.
             Texture2D pixel = new Texture2D(graphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });

@@ -49,14 +49,10 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
+                ConsoleOutput.WriteLine("Fatal error while getting length of video.");
+                Global.generatorFactory.failureReason = "Fatal error while getting length of video.";
+                Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
+                Global.generatorFactory.CancelGeneration();
                 return "0";
             }
         }
@@ -101,14 +97,10 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
+                ConsoleOutput.WriteLine("Fatal error while snipping video.");
+                Global.generatorFactory.failureReason = "Fatal error while snipping video.";
+                Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
+                Global.generatorFactory.CancelGeneration();
             }
         }
 
@@ -140,23 +132,14 @@ namespace YTPPlusPlusPlus
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
-
-                if (process.HasExited && process.ExitCode == 1)
-                {
-                    ConsoleOutput.WriteLine("Unknown error while copying video.");
-                }
             }
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
+                ConsoleOutput.WriteLine("Fatal error while copying video.");
+                Global.generatorFactory.failureReason = "Fatal error while copying video.";
+                Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
+                Global.generatorFactory.CancelGeneration();
             }
         }
 
@@ -223,15 +206,8 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
                 ConsoleOutput.WriteLine("Trying a different method of concatenation.");
+                Global.generatorFactory.progressText = "Trying a different method of concatenation.";
                 try
                 {
                     // Use concat filter instead
@@ -264,15 +240,9 @@ namespace YTPPlusPlusPlus
                 catch(Exception ex2)
                 {
                     ConsoleOutput.WriteLine(ex2.Message);
-                    if(ex2.StackTrace != null)
-                    {
-                        string[] error = ex2.StackTrace.Split('\n');
-                        for(int i = 0; i < error.Length; i++)
-                        {
-                            ConsoleOutput.WriteLine(error[i]);
-                        }
-                    }
                     ConsoleOutput.WriteLine("Fatal error while concatenating videos.");
+                    Global.generatorFactory.failureReason = "Fatal error while concatenating videos.";
+                    Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
                     Global.generatorFactory.CancelGeneration();
                 }
             }
@@ -288,39 +258,34 @@ namespace YTPPlusPlusPlus
             {
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                string overlayed_video = video.Replace(".mp4", "_chromakey.mp4");
+                ConsoleOutput.WriteLine("Overlaying video " + video + " with " + overlay);
                 startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 startInfo.FileName = ffmpegLocation;
                 startInfo.Arguments = "-i \"" + video
                         + "\" -i \"" + overlay
-                        + "\" -filter_complex \"[1:v]colorkey=0x00BF00:0.3:0.2,scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30[outv];[0:v][outv]overlay=shortest=1[finalv];[0:a][1:a]amerge[finala]\" -map \"[finalv]\" -map \"[finala]\" -y \"" + video.Replace(".mp4", ".temp.mp4") + "\"";
+                        + "\" -filter_complex \"[1:v]colorkey=0x00FF00:0.3:0.2,scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30[outv];[0:v][outv]overlay=shortest=1[finalv];[0:a][1:a]amerge[finala]\" -map \"[finalv]\" -map \"[finala]\" -y \"" + overlayed_video + "\"";
                 startInfo.UseShellExecute = false;
                 startInfo.RedirectStandardOutput = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
+                ConsoleOutput.WriteLine(startInfo.Arguments);
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();
 
                 // Rename the temporary file to the original file
                 File.Delete(video);
-                File.Move(video.Replace(".mp4", ".temp.mp4"), video);
-
-                if (process.HasExited && process.ExitCode == 1)
-                {
-                    ConsoleOutput.WriteLine("Unknown error while overlaying video.");
-                }
+                File.Move(overlayed_video, video);
+                File.Delete(overlay);
             }
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
-                {
-                    string[] error = ex.StackTrace.Split('\n');
-                    for(int i = 0; i < error.Length; i++)
-                    {
-                        ConsoleOutput.WriteLine(error[i]);
-                    }
-                }
+                ConsoleOutput.WriteLine("Fatal error while overlaying video.");
+                Global.generatorFactory.failureReason = "Fatal error while overlaying video.";
+                Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
+                Global.generatorFactory.CancelGeneration();
             }
         }
     }
