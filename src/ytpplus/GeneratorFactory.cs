@@ -133,6 +133,11 @@ namespace YTPPlusPlusPlus
                         ConsoleOutput.WriteLine("STARTING CLIP " + "video" + i);
                         float startOfClip = RandomFloat(0f, outputDuration - float.Parse(SaveData.saveValues["MinStreamDuration"]));
                         float endOfClip = startOfClip + RandomFloat(float.Parse(SaveData.saveValues["MinStreamDuration"]), float.Parse(SaveData.saveValues["MaxStreamDuration"]));
+                        // Ensure that the start is not less than 0 and the end is not greater than the source length.
+                        if (startOfClip < 0)
+                            startOfClip = 0;
+                        if (endOfClip > outputDuration)
+                            endOfClip = outputDuration;
                         if (vidThreadWorker?.CancellationPending == true)
                             return;
                         // Add an overlay to the video, if rolled for.
@@ -140,13 +145,7 @@ namespace YTPPlusPlusPlus
                         {
                             // Get random overlay.
                             overlayPath = LibraryData.PickRandom(DefaultLibraryTypes.Overlay, globalRandom);
-                            if(overlayPath != "")
-                            {
-                                // Add length of overlay to start of clip to make a new end of clip.
-                                endOfClip += float.Parse(Utilities.GetLength(overlayPath), NumberStyles.Any, new CultureInfo("en-US"));
-                                ConsoleOutput.WriteLine("Overlay clip enabled, adding " + Utilities.GetLength(overlayPath) + " to end of clip. New end of clip is " + endOfClip + ".");
-                            }
-                            else
+                            if(overlayPath == "")
                             {
                                 rolledForOverlay = false;
                             }
@@ -194,6 +193,11 @@ namespace YTPPlusPlusPlus
                             float overlayDuration = float.Parse(Utilities.GetLength(overlayPath), NumberStyles.Any, new CultureInfo("en-US"));
                             float startOfOverlay = RandomFloat(0f, overlayDuration - float.Parse(SaveData.saveValues["MinStreamDuration"]));
                             float endOfOverlay = startOfOverlay + RandomFloat(float.Parse(SaveData.saveValues["MinStreamDuration"]), float.Parse(SaveData.saveValues["MaxStreamDuration"]));
+                            // Ensure we're not going into negative time or over the length of the overlay.
+                            if (startOfOverlay < 0)
+                                startOfOverlay = 0;
+                            if (endOfOverlay > overlayDuration)
+                                endOfOverlay = overlayDuration;
                             Utilities.SnipVideo(overlayPath, startOfOverlay, endOfOverlay, Path.Combine(Utilities.temporaryDirectory, "video" + i + "_tempoverlay.mp4"));
                             Utilities.OverlayVideo(Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"), Path.Combine(Utilities.temporaryDirectory, "video" + i + "_tempoverlay.mp4"));
                             // The result is a video with an overlay at random points.

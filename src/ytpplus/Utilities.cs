@@ -264,7 +264,7 @@ namespace YTPPlusPlusPlus
                 startInfo.FileName = ffmpegLocation;
                 startInfo.Arguments = "-i \"" + video
                         + "\" -i \"" + overlay
-                        + "\" -filter_complex \"[1:v]colorkey=0x00FF00:0.3:0.2,scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30[outv];[0:v][outv]overlay=shortest=1[finalv];[0:a][1:a]amerge[finala]\" -map \"[finalv]\" -map \"[finala]\" -y \"" + overlayed_video + "\"";
+                        + "\" -filter_complex \"[1:v]colorkey=0x00FF00:0.3:0.2,scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30[outv];[0:v][outv]overlay=shortest=1[finalv];[0:a][1:a]amix=inputs=2:duration=shortest[outa]\" -map \"[finalv]\" -map \"[outa]\" -y \"" + overlayed_video + "\"";
                 startInfo.UseShellExecute = false;
                 startInfo.RedirectStandardOutput = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -276,7 +276,7 @@ namespace YTPPlusPlusPlus
                 // Rename the temporary file to the original file
                 File.Delete(video);
                 File.Move(overlayed_video, video);
-                File.Delete(overlay);
+                //File.Delete(overlay);
             }
             catch(Exception ex)
             {
