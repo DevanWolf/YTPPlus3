@@ -269,7 +269,6 @@ namespace YTPPlusPlusPlus
                 startInfo.RedirectStandardOutput = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
-                ConsoleOutput.WriteLine(startInfo.Arguments);
                 process.StartInfo = startInfo;
                 process.Start();
                 process.WaitForExit();

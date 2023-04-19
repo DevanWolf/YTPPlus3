@@ -316,8 +316,8 @@ namespace YTPPlusPlusPlus
             if(vidThreadWorker != null)
             {
                 // Make sure it's not completed or cancelled already.
-                if(vidThreadWorker.IsBusy)
-                    vidThreadWorker.CancelAsync();
+                //if(vidThreadWorker.IsBusy)
+                vidThreadWorker.CancelAsync();
                 generatorActive = false;
                 progressState = ProgressState.Failed;
                 if(user)

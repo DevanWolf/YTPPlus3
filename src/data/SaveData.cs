@@ -39,7 +39,7 @@ namespace YTPPlusPlusPlus
             {"AprilFoolsFlappyBirdScore", "0"},
             {"MusicVolume", "100"},
             {"SoundEffectVolume", "100"},
-            {"ActiveMusic", "0"},
+            {"ActiveMusic", "1"},
             {"ShuffleMusic", "false"},
             {"TransitionChance", "20"},
             {"OverlayChance", "20"},

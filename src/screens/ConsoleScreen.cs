@@ -108,10 +108,11 @@ namespace YTPPlusPlusPlus
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateTranslation(offset.X, offset.Y, 0));
             // Draw the background.
             Texture2D pixel = GlobalContent.GetTexture("Pixel");
-            spriteBatch.Draw(pixel, new Rectangle(0, 0, GlobalGraphics.scaledWidth, GlobalGraphics.scaledHeight), new Color(0, 0, 0, 128));
+            spriteBatch.Draw(pixel, new Rectangle(0, 0, GlobalGraphics.scaledWidth, GlobalGraphics.scaledHeight), new Color(0, 0, 0, 255));
             // Draw the center title bar text.`
-            Vector2 titleSize = GlobalGraphics.fontMunroSmall.MeasureString(title);
-            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, title, new Vector2(GlobalGraphics.scaledWidth / 2 - titleSize.X / 2, (6 * GlobalGraphics.scale) - GlobalGraphics.Scale(1)), Color.White);
+            string newTitle = title + " - Toggle with ~ (tilde key)";
+            Vector2 titleSize = GlobalGraphics.fontMunroSmall.MeasureString(newTitle);
+            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, newTitle, new Vector2(GlobalGraphics.scaledWidth / 2 - titleSize.X / 2, (6 * GlobalGraphics.scale) - GlobalGraphics.Scale(1)), Color.White);
             // Draw lines.
             int lineHeight = 8 * GlobalGraphics.scale;
             int lineSpacing = 2 * GlobalGraphics.scale;
