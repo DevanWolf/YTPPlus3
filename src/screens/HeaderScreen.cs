@@ -95,16 +95,23 @@ namespace YTPPlusPlusPlus
                 {
                     if(MouseInput.LastMouseState.LeftButton == ButtonState.Released && MouseInput.MouseState.LeftButton == ButtonState.Pressed)
                     {
-                        // Play sound
-                        GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f); 
-                        Hide();
-                        ScreenManager.PushNavigation("April Fools");
-                        ScreenManager.GetScreen<AprilFoolsScreen>("April Fools")?.Show();
-                        ScreenManager.GetScreen<HeaderScreen>("Header")?.Hide();
-                        ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
-                        ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
-                        ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
-                        ScreenManager.GetScreen<TutorialScreen>("Tutorial")?.Hide();
+                        if(Global.pluginsLoaded)
+                        {
+                            // Play sound
+                            GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f); 
+                            Hide();
+                            ScreenManager.PushNavigation("April Fools");
+                            ScreenManager.GetScreen<AprilFoolsScreen>("April Fools")?.Show();
+                            ScreenManager.GetScreen<HeaderScreen>("Header")?.Hide();
+                            ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
+                            ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
+                            ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
+                            ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Hide();
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f); 
+                        }
                         return true;
                     }
                 }

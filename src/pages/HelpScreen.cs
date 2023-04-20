@@ -10,7 +10,7 @@ namespace YTPPlusPlusPlus
     public class HelpPage : IPage
     {
         public string Name { get; } = "Help";
-        public string Tooltip { get; } = "Access help and re-visit the tutorial window.";
+        public string Tooltip { get; } = "Access help and re-visit the initial setup.";
         private readonly InteractableController controller = new();
         public bool Update(GameTime gameTime, bool handleInput)
         {
@@ -40,15 +40,14 @@ namespace YTPPlusPlusPlus
             controller.Add("Help2", new Label("Feed input (materials) to render.", new Vector2(139, 60+12)));
             controller.Add("Help1", new Label("This is a nonsensical video generator.", new Vector2(139, 60)));
             // Add buttons
-            /*
-            controller.Add("ViewTutorial", new Button("Show Tutorial Window", "Access the tutorial window for initial help.", new Vector2(151+36, 60+10+19*8), (int i) => {
+            controller.Add("ViewTutorial", new Button("Show Tutorial Window", "Access the initial setup window.", new Vector2(151+36, 60+10+19*8), (int i) => {
                 switch(i)
                 {
                     case 2: // left click
                         GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        ScreenManager.PushNavigation("Tutorial");
-                        ScreenManager.GetScreen<TutorialScreen>("Tutorial")?.Show();
+                        ScreenManager.PushNavigation("Initial Setup");
+                        ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Show();
                         ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
                         ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
                         ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
@@ -56,7 +55,6 @@ namespace YTPPlusPlusPlus
                 }
                 return false;
             }));
-            */
             // Interactable
             controller.LoadContent(contentManager, graphicsDevice);
         }

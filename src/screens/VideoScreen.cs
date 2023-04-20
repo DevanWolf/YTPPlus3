@@ -138,7 +138,10 @@ namespace YTPPlusPlusPlus
             GlobalContent.AddTexture("VidWindow", contentManager.Load<Texture2D>("graphics/vidwindow"));
             GlobalContent.AddTexture("VidButton", contentManager.Load<Texture2D>("graphics/vidbutton"));
             GlobalContent.AddTexture("VidBG", contentManager.Load<Texture2D>("graphics/vidbg"));
-            Show();
+            if(Global.pluginsLoaded)
+                Show();
+            else
+                Hide();
         }
     }
 }

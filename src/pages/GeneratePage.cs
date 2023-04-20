@@ -243,8 +243,6 @@ namespace YTPPlusPlusPlus
             controller.LoadContent(contentManager, graphicsDevice);
             controllerAdvanced.LoadContent(contentManager, graphicsDevice);
             controllerRendering.LoadContent(contentManager, graphicsDevice);
-            // Load plugins.
-            PluginHandler.LoadPlugins();
         }
     }
 }

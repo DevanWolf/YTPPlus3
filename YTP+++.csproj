@@ -3,9 +3,9 @@
     <AssemblyName>YTP+++</AssemblyName>
     <AssemblyProduct>YTP+++</AssemblyProduct>
     <AssemblyTitle>Nonsensical video generator.</AssemblyTitle>
-    <FileVersion>3.0.3</FileVersion>
-    <AssemblyVersion>3.0.3</AssemblyVersion>
-    <Version>3.0.3</Version>
+    <FileVersion>3.0.4</FileVersion>
+    <AssemblyVersion>3.0.4</AssemblyVersion>
+    <Version>3.0.4</Version>
     <AssemblyCopyright>Copyright © KiwifruitDev 2023</AssemblyCopyright>
     <AssemblyTrademark>YTP+++ licensed under the MIT License; Newtonsoft.Json licensed under MIT; MonoGame licensed under Ms-PL; Munro licensed under SIL OFL</AssemblyTrademark>
     <Authors>KiwifruitDev, hazelcode</Authors>

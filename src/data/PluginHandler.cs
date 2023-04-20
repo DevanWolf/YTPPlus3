@@ -10,6 +10,7 @@ namespace YTPPlusPlusPlus
 {
     public enum PluginType
     {
+        None,
         Python,
         NodeJS,
         Batch
@@ -126,12 +127,12 @@ namespace YTPPlusPlusPlus
                     return false;
             }
         }
-        public void Query()
+        public bool Query()
         {
             // Only Python plugins can query.
             if (type != PluginType.Python)
             {
-                return;
+                return true; // Don't error out if the plugin isn't Python.
             }
             // Temporarily add plugins/py/lib to path.
             string pythonPath = Environment.GetEnvironmentVariable("PYTHONPATH");
@@ -153,13 +154,22 @@ namespace YTPPlusPlusPlus
             pythonProcess.Start();
             string output = pythonProcess.StandardOutput.ReadToEnd();
             pythonProcess.WaitForExit();
+            // Check for errors.
+            if (pythonProcess.ExitCode != 0)
+            {
+                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} returned an error code.");
+                for (int i = 0; i < output.Split('\n').Length; i++)
+                {
+                    ConsoleOutput.WriteLine(output.Split('\n')[i]);
+                }
+                return false;
+            }
             // Remove plugins/py/lib from path.
             Environment.SetEnvironmentVariable("PYTHONPATH", pythonPath);
             // Parse output.
             output = output.Replace("\r", "").Replace("\n", "");
             string[] query = output.Split(';');
-            // Print count
-            ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} returned {query.Length} libraries.");
+            int count = 0;
             for(int i = 0; i < query.Length; i++)
             {
                 // First character is either a 0 or 1 for video/audio
@@ -180,7 +190,12 @@ namespace YTPPlusPlusPlus
                 LibraryData.libraryNames.Add(dummyType, split[1].Replace("_", " "));
                 // Print to console.
                 ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.");
+                count++;
             }
+            // Print count
+            if (count > 0)
+                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} added {count} libraries.");
+            return true;
         }
     }
     /// <summary>
@@ -192,10 +207,11 @@ namespace YTPPlusPlusPlus
         private static string pluginPath = @".\plugins";
         public static void LoadPlugin(string path, PluginType type)
         {
-            ConsoleOutput.WriteLine($"Loaded plugin {path} of type {type}.");
             Plugin plugin = new(path, type);
-            plugin.Query();
+            if(!plugin.Query())
+                throw new Exception($"Failed to query plugin {Path.GetFileName(path)}.");
             plugins.Add(plugin);
+            ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.");
         }
         private static void LoadPluginsRecursive(string path, PluginType type)
         {
@@ -239,13 +255,14 @@ namespace YTPPlusPlusPlus
                 LoadPluginsRecursive(file, type);
             }
         }
-        public static void LoadPlugins()
+        public static bool LoadPlugins()
         {
             // Create plugin directory if it doesn't exist.
             if(Directory.Exists(pluginPath) == false)
             {
                 Directory.CreateDirectory(pluginPath);
             }
+            ConsoleOutput.WriteLine($"Searching for plugins in {pluginPath}...");
             List<string> pluginDirs = new()
             {
                 "py",
@@ -260,25 +277,37 @@ namespace YTPPlusPlusPlus
                     Directory.CreateDirectory(Path.Combine(pluginPath, subdir));
                 }
             }
-            // Load from plugin path using subdirectories for each plugin type.
-            foreach (string file in Directory.GetDirectories(pluginPath))
+            try
             {
-                string dirName = Path.GetFileName(file);
-                PluginType type = PluginType.Python;
-                switch (dirName)
+                // Load from plugin path using subdirectories for each plugin type.
+                foreach (string file in Directory.GetDirectories(pluginPath))
                 {
-                    case "py":
-                        type = PluginType.Python;
-                        break;
-                    case "js":
-                        type = PluginType.NodeJS;
-                        break;
-                    case "bat":
-                        type = PluginType.Batch;
-                        break;
+                    string dirName = Path.GetFileName(file);
+                    PluginType type = PluginType.None;
+                    switch (dirName)
+                    {
+                        case "py":
+                            type = PluginType.Python;
+                            break;
+                        case "js":
+                            type = PluginType.NodeJS;
+                            break;
+                        case "bat":
+                            type = PluginType.Batch;
+                            break;
+                    }
+                    if (type == PluginType.None)
+                        continue;
+                    ConsoleOutput.WriteLine($"Loading {dirName} plugins...");
+                    LoadPluginsRecursive(file, type);
                 }
-                LoadPluginsRecursive(file, type);
             }
+            catch (Exception e)
+            {
+                ConsoleOutput.WriteLine($"Error loading plugins: {e.Message}");
+                return false;
+            }
+            return true;
         }
         public static bool PickRandom(Random rnd, string video)
         {

@@ -30,7 +30,9 @@ namespace YTPPlusPlusPlus
         private readonly List<Texture2D> videoPlayers = new();
         private int selectedFlags = 1 | 8; // 1 = Video, 8 = First SubType
         private int staticAnim = 0;
+        private int audioAnim = 0;
         private double lastAnimTime;
+        private double lastAnimTimeAudio;
         private int page = 0;
         private bool demandChange = true;
         private bool organizing = false;
@@ -75,6 +77,11 @@ namespace YTPPlusPlusPlus
             {
                 GlobalContent.AddTexture("StaticAnim" + i, contentManager.Load<Texture2D>("graphics/library/staticanim/staticanim" + i));
             }
+            // Vinyl Record Animation: 2 frames as graphics/library/audioanim/audioanim0 to graphics/library/audioanim/audioanim1
+            for(int i = 0; i < 2; i++)
+            {
+                GlobalContent.AddTexture("AudioAnim" + i, contentManager.Load<Texture2D>("graphics/library/audioanim/audioanim" + i));
+            }
             // Get textures
             Texture2D addVideoOverlay = GlobalContent.GetTexture("AddVideoOverlay");
             Texture2D headerButton = GlobalContent.GetTexture("HeaderButton");
@@ -104,7 +111,8 @@ namespace YTPPlusPlusPlus
             if(demandChange)
             {
                 // Load video players
-                ChangeVideos(spriteBatch.GraphicsDevice);
+                if(currentRootType == LibraryRootType.Video)
+                    ChangeVideos(spriteBatch.GraphicsDevice);
                 demandChange = false;
             }
             // Store textures in local variable for performance
@@ -138,16 +146,21 @@ namespace YTPPlusPlusPlus
                     // Get library item at this position and page
                     int position = a + (b * 3) + (12 * page);
                     bool video = false;
-                    // Draw static
                     spriteBatch.Draw(GlobalContent.GetTexture("StaticAnim" + staticAnim), staticRect, Color.White);
                     if(libraryFileCache[currentLibraryType].Count > position)
                     {
-                        // Draw video
                         video = true;
-                        int pagelessPosition = position - (12 * page);
-                        if(videoPlayers.Count > pagelessPosition)
+                        if(currentRootType == LibraryRootType.Video)
                         {
-                            spriteBatch.Draw(videoPlayers[pagelessPosition], staticRect, Color.White);
+                            int pagelessPosition = position - (12 * page);
+                            if(videoPlayers.Count > pagelessPosition)
+                            {
+                                spriteBatch.Draw(videoPlayers[pagelessPosition], staticRect, Color.White);
+                            }
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(GlobalContent.GetTexture("AudioAnim" + audioAnim), staticRect, Color.White);
                         }
                     }
                     // Draw video holder
@@ -219,7 +232,7 @@ namespace YTPPlusPlusPlus
                 // Make sure it doesn't go off the bottom of the screen
                 if (position.Y + tooltipSize.Y + GlobalGraphics.Scale(2) > GlobalGraphics.scaledHeight)
                     position.Y = GlobalGraphics.scaledHeight - tooltipSize.Y - GlobalGraphics.Scale(2); 
-                spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle((int)position.X, (int)position.Y, (int)tooltipSize.X + GlobalGraphics.Scale(2), (int)tooltipSize.Y - GlobalGraphics.Scale(2)), new Color(0, 0, 0, 128));
+                spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle((int)position.X, (int)position.Y, (int)tooltipSize.X + GlobalGraphics.Scale(2), (int)tooltipSize.Y - GlobalGraphics.Scale(2)), new Color(0, 0, 0, 255));
                 // White text
                 spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tooltip, new Vector2(position.X + GlobalGraphics.Scale(2), position.Y - GlobalGraphics.Scale(2)), Color.White);
             }
@@ -325,10 +338,20 @@ namespace YTPPlusPlusPlus
             {
                 // Update animation
                 staticAnim++;
-                if (staticAnim > 12)
+                if(staticAnim > 12)
                     staticAnim = 0;
                 // Update lastAnimTime
                 lastAnimTime = gameTime.TotalGameTime.TotalMilliseconds;
+            }
+            // audioanim is a 4fps animation
+            if(gameTime.TotalGameTime.TotalMilliseconds - lastAnimTimeAudio > 250)
+            {
+                // Update animation
+                audioAnim++;
+                if(audioAnim > 1)
+                    audioAnim = 0;
+                // Update lastAnimTimeAudio
+                lastAnimTimeAudio = gameTime.TotalGameTime.TotalMilliseconds;
             }
             // Standard input
             if(handleInput && !organizing)
@@ -508,7 +531,7 @@ namespace YTPPlusPlusPlus
                                         }));
                                     }
                                     // Replicate videoplayer
-                                    Texture2D videoPlayerTexture = videoPlayers[position];
+                                    Texture2D videoPlayerTexture = currentRootType == LibraryRootType.Video ? videoPlayers[position] : GlobalContent.GetTexture("AudioAnim" + audioAnim);
                                     Global.mask.AddUnmaskedObject("VideoPlayer", new SimpleObject(staticRect, Color.White, videoPlayerTexture, () => {
                                         return false;
                                     }));

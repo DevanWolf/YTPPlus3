@@ -51,9 +51,29 @@ namespace YTPPlusPlusPlus
             _graphics.PreferredBackBufferWidth = (int)(int.Parse(SaveData.saveValues["ScreenWidth"]) * scale);
             _graphics.PreferredBackBufferHeight = (int)(int.Parse(SaveData.saveValues["ScreenHeight"]) * scale);
             _graphics.ApplyChanges();
+            ConsoleOutput.Clear();
+            // Delete update.bat
+            try
+            {
+                if(System.IO.File.Exists("update.bat"))
+                    System.IO.File.Delete("update.bat");
+            }
+            catch
+            {
+            }
+            // Load plugins.
+            if(!bool.Parse(SaveData.saveValues["FirstBoot"]) && SaveData.saveValues["FirstBootVersion"] == Global.productVersion)
+            {
+                Global.pluginsLoaded = PluginHandler.LoadPlugins(); // Only load plugins after first boot.
+            }
+            else
+            {
+                SaveData.saveValues["FirstBoot"] = "true";
+                SaveData.saveValues["FirstBootVersion"] = Global.productVersion;
+                SaveData.Save();
+            }
             // Load all screens.
             ScreenManager.LoadScreens();
-            ConsoleOutput.Clear();
             ConsoleOutput.WriteLine("Initialization complete.");
             base.Initialize();
         }

@@ -18,13 +18,15 @@ namespace YTPPlusPlusPlus
         /// <summary>
         /// The title of the screen. This is displayed on the header bar.
         /// </summary>
-        public string title { get; } = "Tutorial";
+        public string title { get; } = "Initial Setup";
         public int layer { get; } = 6;
-        public ScreenType screenType { get; set; } = ScreenType.Hidden;
+        public ScreenType screenType { get; set; } = ScreenType.Drawn;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = false;
         private bool showing = false;
         private bool toggle = false;
+        private bool check = false;
+        private bool check2 = false;
         public Vector2 offset = new(0, 0);
         private readonly Tweener tween = new();
         private readonly InteractableController controller = new();
@@ -108,6 +110,72 @@ namespace YTPPlusPlusPlus
             MouseInput.LastMouseState = lastMouseState;
             return false;
         }
+        public List<string>[] tutorialText = new List<string>[3]
+        {
+            new List<string>()
+            { // PAGE 1
+                "Welcome to YTP+++!",
+                "This initial setup will help you get started with the program.",
+                "",
+                "This screen may be shown if there is an issue with your setup.",
+                "Otherwise, this may be the first boot of the program.",
+                "On the next page, we will check prerequisites.",
+                "",
+                "The following software is required to run YTP+++:",
+                " - .NET 6.0 Desktop Runtime (already installed)",
+                " - FFmpeg",
+                " - FFprobe",
+                " - Python 3",
+                "",
+                "The following software is optional, but recommended:",
+                " - Node.JS (only for legacy YTP+ CLI plugin support)",
+                " - ImageMagick (some plugins may require this)",
+                "",
+                "If you have any issues, please refer to the installation guide.",
+                "Click \"Next Page\" to continue."
+            },
+            new List<string>()
+            { // PAGE 2
+                "Below shows the status of the prerequisites.",
+                "On the next page, we will check for updates.",
+                "",
+                "Required software:",
+                " - FFmpeg: %FFMPEG%",
+                " - FFprobe: %FFPROBE%",
+                " - Python: %PYTHON%",
+                "",
+                "Optional software:",
+                " - Node.JS: %NODEJS%",
+                " - ImageMagick: %IMAGEMAGICK%",
+                "",
+                "If any of the required software is missing, please install it.",
+                "You must add the software to your PATH environment variable.",
+                "Instructions may be found in the installation guide.",
+                "",
+                "Click \"Next Page\" to continue if the required software is installed."
+            },
+            new List<string>()
+            { // PAGE 3
+                "Next, we will check for updates.",
+                "",
+                " - Update check: %UPDATECHECK%",
+                "",
+                "Download the latest version above if an update is available.",
+                "",
+                "Information about YTP+++ and its features may be found in the",
+                "YTP+ Hub Discord.",
+                "To refer back to this setup, it may be accessed at any time from",
+                "the \"Help\" tab.",
+                "",
+                "Enjoy using YTP+++, and be sure to report any issues!",
+                "Click \"Continue\" to load plugins and proceed to YTP+++.",
+                "",
+                "If there are still issues, the continue button will be disabled.",
+                "Broken plugins may be the culprit, if the installation is correct.",
+                "Try restarting the program without plugins, or reinstalling.",
+                "You may also check console with ~ (tilde) for troubleshooting."
+            }
+        };
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             // End existing spritebatch
@@ -127,6 +195,86 @@ namespace YTPPlusPlusPlus
             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, title + ": Page 2/3", new Vector2(GlobalGraphics.scaledWidth / 2 - titleSize2.X / 2 + GlobalGraphics.Scale(320), (6 * GlobalGraphics.scale) - GlobalGraphics.Scale(1-32)), Color.White);
             Vector2 titleSize3 = GlobalGraphics.fontMunroSmall.MeasureString(title + ": Page 3/3");
             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, title + ": Page 3/3", new Vector2(GlobalGraphics.scaledWidth / 2 - titleSize3.X / 2 + GlobalGraphics.Scale(640), (6 * GlobalGraphics.scale) - GlobalGraphics.Scale(1-32)), Color.White);
+            // Draw tutorial text
+            int offsetPage = 0;
+            for(int i = 0; i < 3; i++)
+            {
+                int offsetText = 0;
+                for(int j = 0; j < tutorialText[i].Count; j++)
+                {
+                    Vector2 textSize = GlobalGraphics.fontMunroSmall.MeasureString(tutorialText[i][j]);
+                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tutorialText[i][j], new Vector2(GlobalGraphics.Scale(8+16+1+320*i), GlobalGraphics.Scale(60+offsetText+1)), Color.Black);
+                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tutorialText[i][j], new Vector2(GlobalGraphics.Scale(8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.White);
+                    // Draw red overlay if prerequisite is not met
+                    if(tutorialText[i][j].Contains("Not installed"))
+                    {
+                        int offset = 0;
+                        switch(j)
+                        {
+                            case 4:
+                                offset = 43;
+                                break;
+                            case 5:
+                                offset = 47;
+                                break;
+                            case 6:
+                                offset = 45;
+                                break;
+                            case 9:
+                                offset = 43;
+                                break;
+                            case 10:
+                                offset = 64;
+                                break;
+                        }
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Not installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
+                    }
+                    // Draw green overlay if prerequisite is met
+                    if(tutorialText[i][j].Contains("Installed"))
+                    {
+                        int offset = 0;
+                        switch(j)
+                        {
+                            case 4:
+                                offset = 43;
+                                break;
+                            case 5:
+                                offset = 47;
+                                break;
+                            case 6:
+                                offset = 45;
+                                break;
+                            case 9:
+                                offset = 43;
+                                break;
+                            case 10:
+                                offset = 64;
+                                break;
+                        }
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
+                    }
+                    // Draw green overlay if update is available
+                    if(tutorialText[i][j].Contains("Available"))
+                    {
+                        int offset = 68;
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Available", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
+                    }
+                    // Draw blue overlay if up to date
+                    if(tutorialText[i][j].Contains("Up to date"))
+                    {
+                        int offset = 68;
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Up to date", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.SkyBlue);
+                    }
+                    // Draw red overlay if update check failed
+                    if(tutorialText[i][j].Contains("Failed"))
+                    {
+                        int offset = 68;
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Failed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
+                    }
+                    offsetText += GlobalGraphics.Scale(4);
+                }
+                offsetPage += offsetText + GlobalGraphics.Scale(16);
+            }
             // End offset spritebatch
             spriteBatch.End();
             // Remake spritebatch
@@ -139,24 +287,67 @@ namespace YTPPlusPlusPlus
         {
             // Tutorial window
             GlobalContent.AddTexture("TutorialWindow", contentManager.Load<Texture2D>("graphics/tutorialwindow"));
+            // PAGE 1
             controller.Add("Button1", new Button("Next Page", "", new Vector2(237+32+2, 217+12-6), (int i) => {
                 switch(i)
                 {
                     case 2: // left click
+                        // Get dependencies.
                         GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        if(!check)
+                        {
+                            ConsoleOutput.WriteLine("Getting dependencies...");
+                            UpdateManager.GetDependencyStatus();
+                            foreach(string s in UpdateManager.GetDependencies().Split('\n'))
+                            {
+                                ConsoleOutput.WriteLine(s);
+                            }
+                            for (int h = 0; h < tutorialText.Length; h++)
+                            {
+                                for (int j = 0; j < tutorialText[h].Count; j++)
+                                {
+                                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
+                                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
+                                    tutorialText[h][j] = tutorialText[h][j].Replace("%PYTHON%", UpdateManager.pythonInstalled ? "Installed" : "Not installed");
+                                    tutorialText[h][j] = tutorialText[h][j].Replace("%NODEJS%", UpdateManager.nodeInstalled ? "Installed" : "Not installed");
+                                    tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
+                                }
+                            }
+                            check = true;
+                        }
                         tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-320), 0), 0.5f)
                             .Easing(EasingFunctions.ExponentialOut);
                         return true;
                 }
                 return false;
             }));
+            // PAGE 2
             controller.Add("Button2", new Button("Next Page", "", new Vector2(237+32+320+2, 217+12-6), (int i) => {
                 switch(i)
                 {
                     case 2: // left click
-                        GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), 0), 0.5f)
-                            .Easing(EasingFunctions.ExponentialOut);
+                        if(UpdateManager.ffmpegInstalled && UpdateManager.ffprobeInstalled && UpdateManager.pythonInstalled)
+                        {
+                            GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            if(!check2)
+                            {
+                                UpdateManager.CheckForUpdates();
+                                for (int h = 0; h < tutorialText.Length; h++)
+                                {
+                                    for (int j = 0; j < tutorialText[h].Count; j++)
+                                    {
+                                        tutorialText[h][j] = tutorialText[h][j].Replace("%UPDATECHECK%", UpdateManager.updateFailed ? "Failed (v" + Global.productVersion + ")" : (UpdateManager.updateAvailable ? "Available (v" + Global.productVersion + " -> " + UpdateManager.updateTag + ")" : "Up to date (v" + Global.productVersion + ")"));
+                                    }
+                                }
+                                check2 = true;
+                            }
+                            tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), 0), 0.5f)
+                                .Easing(EasingFunctions.ExponentialOut);
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
                         return true;
                 }
                 return false;
@@ -172,6 +363,7 @@ namespace YTPPlusPlusPlus
                 }
                 return false;
             }));
+            // PAGE 3
             controller.Add("Button4", new Button("Previous Page", "", new Vector2(28+32+640-4, 217+12-6), (int i) => {
                 switch(i)
                 {
@@ -187,22 +379,54 @@ namespace YTPPlusPlusPlus
                 switch(i)
                 {
                     case 2: // left click
-                        GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        toggle = false;
-                        tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), GlobalGraphics.Scale(240)), 0.5f)
-                            .Easing(EasingFunctions.ExponentialOut);
-                        hiding = true;
-                        ScreenManager.PushNavigation("Main Menu");
-                        ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Show();
-                        ScreenManager.PushNavigation("Video");
-                        ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
-                        ScreenManager.PushNavigation("Content");
-                        ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
+                        if(!Global.pluginsLoaded)
+                            Global.pluginsLoaded = PluginHandler.LoadPlugins();
+                        if(Global.pluginsLoaded)
+                        {
+                            SaveData.saveValues["FirstBoot"] = "false";
+                            SaveData.Save();
+                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            toggle = false;
+                            tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), GlobalGraphics.Scale(240)), 0.5f)
+                                .Easing(EasingFunctions.ExponentialOut);
+                            hiding = true;
+                            ScreenManager.PushNavigation("Main Menu");
+                            ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Show();
+                            ScreenManager.PushNavigation("Video");
+                            ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
+                            ScreenManager.PushNavigation("Content");
+                            ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
+                        return true;
+                }
+                return false;
+            }));
+            controller.Add("Button6", new Button("Download Update", "", new Vector2(228+32+640-4, 78+12-6), (int i) => {
+                switch(i)
+                {
+                    case 2: // left click
+                        if(UpdateManager.updateUrl != "")
+                        {
+                            GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            UpdateManager.DownloadUpdate();
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
                         return true;
                 }
                 return false;
             }));
             controller.LoadContent(contentManager, graphicsDevice);
+            if(!Global.pluginsLoaded)
+                Show();
+            else
+                Hide();
         }
     }
 }

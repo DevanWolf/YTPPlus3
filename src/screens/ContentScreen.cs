@@ -124,7 +124,10 @@ namespace YTPPlusPlusPlus
             GlobalContent.AddTexture("MainWindow", contentManager.Load<Texture2D>("graphics/mainwindow"));
             // Pagination
             Pagination.LoadContent(contentManager, graphicsDevice);
-            Show();
+            if(Global.pluginsLoaded)
+                Show();
+            else
+                Hide();
         }
     }
 }

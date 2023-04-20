@@ -44,6 +44,8 @@ namespace YTPPlusPlusPlus
             {"TransitionChance", "20"},
             {"OverlayChance", "20"},
             {"EffectChance", "60"},
+            {"FirstBoot", "true"},
+            {"FirstBootVersion", Global.productVersion}
         };
         private static string _saveFileName = "Options.json";
         public static bool Save()
