@@ -1,10 +1,11 @@
-# YTP+++
+![YTP+++](https://i.imgur.com/VsKyMIG.png)
+_____
 
 A nonsensical video generator written in C# using MonoGame.
 
 Currently only supports Windows.
 
-In Beta, so expect bugs.
+In heavy development, so expect bugs.
 
 ## Requirements
 
