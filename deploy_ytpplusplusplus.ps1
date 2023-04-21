@@ -65,6 +65,10 @@ if ($administrator.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrat
     Remove-Item -Path "$env:TEMP\ytp.json"
     Remove-Item -Path "$env:TEMP\ytpplusplusplus.zip"
 
+    # Change directory to YTPPlusPlusPlus folder.
+    Write-Host "Changing directory to YTPPlusPlusPlus folder..."
+    cd "C:\YTPPlusPlusPlus"
+
     # Start YTP+++.
     Write-Host "Starting YTP+++..."
     Start-Process -FilePath "C:\YTPPlusPlusPlus\YTP+++.exe"
