@@ -107,7 +107,7 @@ namespace YTPPlusPlusPlus
                     Environment.SetEnvironmentVariable("PYTHONPATH", Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins", "py", "lib"));
                     ProcessStartInfo pythonStartInfo = new()
                     {
-                        FileName = "python3",
+                        FileName = "python",
                         Arguments = $".\\py\\{Path.GetFileName(path)} generate \"{Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), video)}\"",
                         WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
                         UseShellExecute = false,
@@ -140,7 +140,7 @@ namespace YTPPlusPlusPlus
             // Capture output from plugin.
             ProcessStartInfo pythonStartInfo = new()
             {
-                FileName = "python3",
+                FileName = "python",
                 Arguments = $".\\py\\{Path.GetFileName(path)} query",
                 WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
                 UseShellExecute = false,
