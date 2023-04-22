@@ -181,16 +181,16 @@ namespace YTPPlusPlusPlus
                 return false;
             }));
             controller.Add("MaxStreamDuration", new TextEntry("Maximum Stream Duration", "End of random length.", SaveData.saveValues["MaxStreamDuration"], new Vector2(139, 60+19*5), 26, 5, 2, (int i) => {
-                string oldValue = SaveData.saveValues["MinStreamDuration"];
-                SaveData.saveValues["MinStreamDuration"] = controller.interactables["MaxStreamDuration"].Tooltip;
-                if(oldValue != SaveData.saveValues["MinStreamDuration"])
+                string oldValue = SaveData.saveValues["MaxStreamDuration"];
+                SaveData.saveValues["MaxStreamDuration"] = controller.interactables["MaxStreamDuration"].Tooltip;
+                if(oldValue != SaveData.saveValues["MaxStreamDuration"])
                     SaveData.Save();
                 return false;
             }));
             controller.Add("MinStreamDuration", new TextEntry("Minimum Stream Duration", "Start of random length.", SaveData.saveValues["MinStreamDuration"], new Vector2(139, 60+19*4), 26, 5, 2, (int i) => {
-                string oldValue = SaveData.saveValues["MaxStreamDuration"];
-                SaveData.saveValues["MaxStreamDuration"] = controller.interactables["MinStreamDuration"].Tooltip;
-                if(oldValue != SaveData.saveValues["MaxStreamDuration"])
+                string oldValue = SaveData.saveValues["MinStreamDuration"];
+                SaveData.saveValues["MinStreamDuration"] = controller.interactables["MinStreamDuration"].Tooltip;
+                if(oldValue != SaveData.saveValues["MinStreamDuration"])
                     SaveData.Save();
                 return false;
             }));

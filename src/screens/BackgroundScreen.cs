@@ -125,6 +125,8 @@ namespace YTPPlusPlusPlus
             counter -= 0.125f;
             if(counter <= 0)
             {
+                // Print time taken to scroll.
+                //ConsoleOutput.WriteLine("Time taken to scroll: " + gameTime.TotalGameTime.TotalSeconds);
                 counter = 360;
             }
             // I started off making this scroll from top right to bottom left.
@@ -173,7 +175,7 @@ namespace YTPPlusPlusPlus
                 }
             }
             // (DEBUG) Draw scroll position.
-            //spriteBatch.DrawString(GlobalContent.GetFont("MunroSmall"), $"{scroll}", new Vector2(16*scale, 16*scale), Color.White);
+            //spriteBatch.DrawString(GlobalContent.GetFont("MunroSmall"), $"{scrollX}, {scrollY}", new Vector2(GlobalGraphics.Scale(16), GlobalGraphics.Scale(16)), Color.White);
             // (DEBUG) Draw count of circles.
             //spriteBatch.DrawString(GlobalContent.GetFont("MunroSmall"), $"{circles.Count}", new Vector2(GlobalGraphics.Scale(16), GlobalGraphics.Scale(32)), Color.White);
             // (DEBUG) Draw mouse click state.
