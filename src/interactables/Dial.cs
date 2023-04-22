@@ -68,6 +68,7 @@ namespace YTPPlusPlusPlus
                             originalValue = value;
                             originalDegrees = degrees;
                             State = 2;
+                            GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             return true;
                         }
                         break;
@@ -76,6 +77,7 @@ namespace YTPPlusPlusPlus
                         if (MouseInput.LastMouseState.LeftButton == ButtonState.Pressed && MouseInput.MouseState.LeftButton == ButtonState.Released)
                         {
                             State = 0;
+                            GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             break;
                         }
                         // Rotating around the origin point (bounds.X+7, bounds.Y+7, 5.5, 5.5)
@@ -145,7 +147,7 @@ namespace YTPPlusPlusPlus
             // Shadows
             spriteBatch.Draw(dial, new Rectangle(GlobalGraphics.Scale(bounds.X + 1), GlobalGraphics.Scale(bounds.Y + 1), GlobalGraphics.Scale(dial.Width), GlobalGraphics.Scale(dial.Height)), Color.Black);
             // Normal
-            spriteBatch.Draw(dial, new Rectangle(GlobalGraphics.Scale(bounds.X), GlobalGraphics.Scale(bounds.Y), GlobalGraphics.Scale(dial.Width), GlobalGraphics.Scale(dial.Height)), Color.White);
+            spriteBatch.Draw(dial, new Rectangle(GlobalGraphics.Scale(bounds.X), GlobalGraphics.Scale(bounds.Y), GlobalGraphics.Scale(dial.Width), GlobalGraphics.Scale(dial.Height)), State < 2 ? Color.White : Color.LightBlue);
             // Dial value graphics are angles from 0-90 degrees in the form of 30 textures
             // Calculate which graphic to draw
             int dialValue = degrees / 3;

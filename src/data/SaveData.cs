@@ -40,7 +40,7 @@ namespace YTPPlusPlusPlus
             {"MusicVolume", "100"},
             {"SoundEffectVolume", "100"},
             {"ActiveMusic", "1"},
-            {"ShuffleMusic", "false"},
+            {"ShuffleMusic", "true"},
             {"TransitionChance", "20"},
             {"OverlayChance", "20"},
             {"EffectChance", "60"},

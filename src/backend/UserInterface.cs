@@ -19,11 +19,6 @@ namespace YTPPlusPlusPlus
         Paused,
         Stopped,
     }
-    public enum MusicActive
-    {
-        Theme, // Funtastic Power! & KiwifruitDev - 300 This Is Sparta (YTP+ Mix)
-        Theme2, // Bobby I Guess - A Nonsensical Song
-    }
     public class UserInterface : Game
     {
         public static UserInterface? instance;
@@ -31,7 +26,7 @@ namespace YTPPlusPlusPlus
         private SpriteBatch? _spriteBatch;
         private WindowState _windowState = WindowState.Focused;
         private MusicState _musicState = MusicState.Stopped;
-        private MusicActive _musicActive = MusicActive.Theme;
+        private int _musicActive = 0;
         public UserInterface()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -105,12 +100,12 @@ namespace YTPPlusPlusPlus
             {
                 // Shuffle music.
                 Global.shuffled = true;
-                music = Global.generatorFactory.globalRandom.Next(0, Enum.GetNames(typeof(MusicActive)).Length);
+                music = Global.generatorFactory.globalRandom.Next(0, GlobalContent.GetSongCount());
                 SaveData.saveValues["ActiveMusic"] = music.ToString();
                 SaveData.Save();
             }
             // Make sure music is in range.
-            if(music < 0 || music >= Enum.GetNames(typeof(MusicActive)).Length)
+            if(music < 0 || music >= GlobalContent.GetSongCount())
             {
                 music = 0;
                 SaveData.saveValues["ActiveMusic"] = music.ToString();
@@ -123,10 +118,10 @@ namespace YTPPlusPlusPlus
             if(gameTime.TotalGameTime.TotalMilliseconds > 2500)
             {
                 // Exchange music if it's not the same as the active music.
-                if(_musicActive != (MusicActive)int.Parse(SaveData.saveValues["ActiveMusic"]))
+                if(_musicActive != int.Parse(SaveData.saveValues["ActiveMusic"]))
                 {
-                    _musicActive = (MusicActive)int.Parse(SaveData.saveValues["ActiveMusic"]);
-                    MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                    _musicActive = int.Parse(SaveData.saveValues["ActiveMusic"]);
+                    MediaPlayer.Play(GlobalContent.GetSongByIndex(_musicActive));
                     MediaPlayer.Volume = 0f;
                 }
                     
@@ -157,7 +152,7 @@ namespace YTPPlusPlusPlus
                             }
                             else if(_musicState == MusicState.Stopped)
                             {
-                                MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                                MediaPlayer.Play(GlobalContent.GetSongByIndex(_musicActive));
                                 _musicState = MusicState.Playing;
                             }
                             else if(_musicState == MusicState.Paused)
@@ -168,7 +163,7 @@ namespace YTPPlusPlusPlus
                             // Loop music.
                             if(MediaPlayer.State == MediaState.Stopped)
                             {
-                                MediaPlayer.Play(GlobalContent.GetSong(_musicActive.ToString()));
+                                MediaPlayer.Play(GlobalContent.GetSongByIndex(_musicActive));
                             }
 
                             break;

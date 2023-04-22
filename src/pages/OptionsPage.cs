@@ -21,6 +21,11 @@ namespace YTPPlusPlusPlus
         }
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            // Draw text
+            spriteBatch.DrawString(GlobalGraphics.fontMunro, "Music: " + GlobalContent.GetSongTitleByIndex(int.Parse(SaveData.saveValues["ActiveMusic"])), new Vector2(GlobalGraphics.Scale(1+139), GlobalGraphics.Scale(1+51+19*6)), Color.Black);
+            spriteBatch.DrawString(GlobalGraphics.fontMunro, "Music: " + GlobalContent.GetSongTitleByIndex(int.Parse(SaveData.saveValues["ActiveMusic"])), new Vector2(GlobalGraphics.Scale(139), GlobalGraphics.Scale(51+19*6)), Color.White);
+            spriteBatch.DrawString(GlobalGraphics.fontMunro, "By: " + GlobalContent.GetSongArtistByIndex(int.Parse(SaveData.saveValues["ActiveMusic"])), new Vector2(GlobalGraphics.Scale(1+139), GlobalGraphics.Scale(1+51+12+19*6)), Color.Black);
+            spriteBatch.DrawString(GlobalGraphics.fontMunro, "By: " + GlobalContent.GetSongArtistByIndex(int.Parse(SaveData.saveValues["ActiveMusic"])), new Vector2(GlobalGraphics.Scale(139), GlobalGraphics.Scale(51+12+19*6)), Color.White);
             // Interactable
             controller.Draw(gameTime, spriteBatch);
         }
@@ -28,10 +33,6 @@ namespace YTPPlusPlusPlus
         {
             // Add labels
             controller.Add("DialLabel", new Label("Click and rotate dials slowly.", new Vector2(139, 60)));
-            controller.Add("MusicLabel", new Label("On: 300 This Is Sparta! (YTP+ Mix)", new Vector2(139, 51+19*6)));
-            controller.Add("MusicLabel2", new Label("by Funtastic Power! & KiwifruitDev", new Vector2(139, 51+16+19*6)));
-            controller.Add("MusicLabel3", new Label("Off: A Nonsensical Song", new Vector2(139, 51+32+19*6)));
-            controller.Add("MusicLabel4", new Label("by Bobby I Guess", new Vector2(139, 51+48+19*6)));
             // Add switches
             controller.Add("ShuffleMusic", new Switch("Shuffle", "Shuffle the music on startup.", new Vector2(139+85, 51+19*5), (int i) => {
                 bool switchState = (i & 256) != 0;
@@ -44,17 +45,13 @@ namespace YTPPlusPlusPlus
                 }
                 return switchState;
             }, SaveData.saveValues["ShuffleMusic"] == "true"));
-            controller.Add("ActiveMusic", new Switch("Legacy Music", "Switch between the old and new music.", new Vector2(139, 51+19*5), (int i) => {
-                bool switchState = (i & 256) != 0;
-                if((i & 2) != 0)
-                {
-                    string oldValue = SaveData.saveValues["ActiveMusic"];
-                    SaveData.saveValues["ActiveMusic"] = switchState.ToString().ToLower() == "true" ? "0" : "1";
-                    if(oldValue != SaveData.saveValues["ActiveMusic"])
-                        SaveData.Save();
-                }
-                return switchState;
-            }, SaveData.saveValues["ActiveMusic"] == "0"));
+            controller.Add("ActiveMusic", new Dial("Music Type", "Change the current background music.", new Vector2(139, 51+19*5), int.Parse(SaveData.saveValues["ActiveMusic"]), 0, GlobalContent.GetSongCount() - 1, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["ActiveMusic"]);
+                SaveData.saveValues["ActiveMusic"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["ActiveMusic"]))
+                    SaveData.Save();
+                return false;
+            }));
             // Add dials
             controller.Add("BGSaturation", new Dial("Background Saturation", "Adjust color in the animated background.", new Vector2(139, 51+19*4), int.Parse(SaveData.saveValues["BackgroundSaturation"]), 0, 100, (int i) => {
                 int oldValue = int.Parse(SaveData.saveValues["BackgroundSaturation"]);

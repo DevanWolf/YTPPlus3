@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -17,6 +18,7 @@ namespace YTPPlusPlusPlus
         private static Dictionary<string, SpriteFont> fonts = new Dictionary<string, SpriteFont>();
         private static Dictionary<string, SoundEffect> sounds = new Dictionary<string, SoundEffect>();
         private static Dictionary<string, Song> songs = new Dictionary<string, Song>();
+        private static Dictionary<string, string[]> songTitlesAndArtists = new Dictionary<string, string[]>();
         public static void LoadDefaultContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
             // Load default sounds.
@@ -36,8 +38,14 @@ namespace YTPPlusPlusPlus
             AddFont("MunroNarrow", contentManager.Load<SpriteFont>("fonts/munro-narrow-x"+scale));
             AddFont("MunroSmall", contentManager.Load<SpriteFont>("fonts/munro-small-x"+scale));
             // Load default songs.
-            AddSong("Theme", contentManager.Load<Song>("music/theme"));
-            AddSong("Theme2", contentManager.Load<Song>("music/theme2"));
+            AddSong("Theme", contentManager.Load<Song>("music/theme"), "300 This Is Sparta (YTP+ Mix)", "Funtastic Power! & KiwifruitDev");
+            AddSong("Theme2", contentManager.Load<Song>("music/theme2"), "A Nonsensical Song", "Bobby I Guess");
+            AddSong("Theme3", contentManager.Load<Song>("music/theme3"), "Creation", "Bobby I Guess");
+            // Dynamic implementation is required for these two songs.
+            // They're context-sensitive, so we'll add them at a later time.
+            // TODO: Add songs to mgcb when they're added.
+            //AddSong("Theme4", contentManager.Load<Song>("music/theme4"));
+            //AddSong("Theme5", contentManager.Load<Song>("music/theme5"));
             // Create pixel shape.
             Texture2D pixel = new Texture2D(graphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
@@ -131,12 +139,17 @@ namespace YTPPlusPlusPlus
             sounds.Add(name, sound);
             return true;
         }
-        public static bool AddSong(string name, Song song)
+        public static bool AddSong(string name, Song song, string title = null, string artist = null)
         {
             if (songs.ContainsKey(name))
                 return false;
             songs.Add(name, song);
+            songTitlesAndArtists.Add(name, new string[] { title ?? name, artist ?? "Unknown" });
             return true;
+        }
+        public static int GetSongCount()
+        {
+            return songs.Count;
         }
         public static Texture2D GetTexture(string name)
         {
@@ -153,6 +166,18 @@ namespace YTPPlusPlusPlus
         public static Song GetSong(string name)
         {
             return songs[name];
+        }
+        public static Song GetSongByIndex(int index)
+        {
+            return songs.Values.ElementAt(index);
+        }
+        public static string GetSongTitleByIndex(int index)
+        {
+            return songTitlesAndArtists.Values.ElementAt(index)[0];
+        }
+        public static string GetSongArtistByIndex(int index)
+        {
+            return songTitlesAndArtists.Values.ElementAt(index)[1];
         }
     }
 }
