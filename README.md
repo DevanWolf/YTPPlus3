@@ -1,8 +1,12 @@
 # YTP+++
 
-![YTP+++](https://i.imgur.com/VsKyMIG.png)
+![YTP+++](https://i.imgur.com/BVumJkW.png)
 
-A nonsensical video generator written in C# using MonoGame.
+[YTP+ Beta](https://github.com/YTP-Plus/YTPPlusUI) & [YTP+ Beta (Library)](https://github.com/YTP-Plus/YTPPlus) > [YTP++ Beta](https://github.com/KiwifruitDev/ytpplus-node-ui) & [YTP+ Node](https://github.com/KiwifruitDev/ytpplus-node) > [YTP++](https://github.com/YTP-Plus/YTPPlusPlus) > [YTP+ Studio](https://github.com/YTP-Plus/YTPPlusStudio) & [YTP+ CLI](https://github.com/YTP-Plus/YTPPlusCLI) > ***YTP+++***
+
+_____
+
+A nonsensical video generator software written in C# using MonoGame.
 
 Currently only supports Windows and is in heavy development, so expect bugs.
 
