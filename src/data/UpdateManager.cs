@@ -33,8 +33,7 @@ namespace YTPPlusPlusPlus
             {
                 "ffmpeg",
                 "ffprobe",
-                // python 3: we can't use "python" because it can refer to python 2.
-                "python3",
+                "python",
                 "node",
                 "magick"
             };
@@ -70,7 +69,7 @@ namespace YTPPlusPlusPlus
             {
                 "ffmpeg",
                 "ffprobe",
-                "python3",
+                "python",
                 "node",
                 "magick"
             };
