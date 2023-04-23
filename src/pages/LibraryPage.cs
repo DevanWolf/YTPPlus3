@@ -11,6 +11,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using System;
+using System.ComponentModel;
 
 namespace YTPPlusPlusPlus
 {
@@ -72,6 +73,7 @@ namespace YTPPlusPlusPlus
             GlobalContent.AddTexture("VideoOff", contentManager.Load<Texture2D>("graphics/library/videooff"));
             GlobalContent.AddTexture("VideoOn", contentManager.Load<Texture2D>("graphics/library/videoon"));
             GlobalContent.AddTexture("SubTypeButtonOrganize", contentManager.Load<Texture2D>("graphics/library/subtypebuttonorganize"));
+            GlobalContent.AddTexture("StaticOverlay", contentManager.Load<Texture2D>("graphics/library/staticoverlay"));
             // TV Static Animation: 13 frames as graphics/library/staticanim/staticanim0 to graphics/library/staticanim/staticanim12
             for(int i = 0; i < 13; i++)
             {
@@ -146,12 +148,12 @@ namespace YTPPlusPlusPlus
                     // Get library item at this position and page
                     int position = a + (b * 3) + (12 * page);
                     bool video = false;
-                    spriteBatch.Draw(GlobalContent.GetTexture("StaticAnim" + staticAnim), staticRect, Color.White);
                     if(libraryFileCache[currentLibraryType].Count > position)
                     {
                         video = true;
                         if(currentRootType == LibraryRootType.Video)
                         {
+                            spriteBatch.Draw(GlobalContent.GetTexture("StaticAnim" + staticAnim), staticRect, new Color(64, 64, 64, 255));
                             int pagelessPosition = position - (12 * page);
                             if(videoPlayers.Count > pagelessPosition)
                             {
@@ -162,6 +164,11 @@ namespace YTPPlusPlusPlus
                         {
                             spriteBatch.Draw(GlobalContent.GetTexture("AudioAnim" + audioAnim), staticRect, Color.White);
                         }
+                    }
+                    else
+                    {   
+                        spriteBatch.Draw(GlobalContent.GetTexture("StaticAnim" + staticAnim), staticRect, Color.White);
+                        spriteBatch.Draw(GlobalContent.GetTexture("StaticOverlay"), staticRect, new Color(255, 255, 255, 128));
                     }
                     // Draw video holder
                     spriteBatch.Draw(videoHolder, videoHolderRect, Color.White);
@@ -237,27 +244,39 @@ namespace YTPPlusPlusPlus
                 spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tooltip, new Vector2(position.X + GlobalGraphics.Scale(2), position.Y - GlobalGraphics.Scale(2)), Color.White);
             }
         }
-        public void ChangeVideos(GraphicsDevice graphicsDevice)
+        // Thread for loading videos
+        private BackgroundWorker loadVideosThread;
+        private void LoadVideosThread(object? sender, DoWorkEventArgs e)
         {
-            // Update video players
-            for(int i = 0; i < videoPlayers.Count; i++)
-            {
-                videoPlayers[i].Dispose();
-            }
-            videoPlayers.Clear();
-            Dictionary<int, Texture2D> videoPlayersTemp = new Dictionary<int, Texture2D>();
+            // Args: GraphicsDevice graphicsDevice, int currentPage
+            object[] args = (object[])e.Argument;
+            GraphicsDevice graphicsDevice = (GraphicsDevice)args[0];
+            int currentPage = (int)args[1];
+            // Load videos
             int a, b;
             for (a = 0; a < 3; a++)
             {
                 for (b = 0; b < 4; b++)
                 {
+                    // Check to make sure we're still on the same page
+                    if (currentPage != page)
+                        return;
+                    // Cancelled?
+                    if (loadVideosThread.CancellationPending)
+                        return;
                     int position = a + (b * 3) + (12 * page);
                     if(libraryFileCache[currentLibraryType].Count > position)
                     {
                         LibraryFile libraryFile = libraryFileCache[currentLibraryType][position];
                         // Get thumbnail of video using shell
                         ShellFile shellFile = ShellFile.FromFilePath(libraryFile.Path);
-                        BitmapSource bitmapSource = shellFile.Thumbnail.ExtraLargeBitmapSource;
+                        BitmapSource bitmapSource = shellFile.Thumbnail.BitmapSource;
+                        // Check to make sure we're still on the same page
+                        if (currentPage != page)
+                            return;
+                        // Cancelled?
+                        if (loadVideosThread.CancellationPending)
+                            return;
                         // Convert to texture
                         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(bitmapSource.PixelWidth, bitmapSource.PixelHeight, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
                         BitmapData data = bitmap.LockBits(new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
@@ -271,16 +290,40 @@ namespace YTPPlusPlusPlus
                             colorData[i] = new Color(color.R, color.G, color.B, color.A);
                         }
                         texture.SetData(colorData);
+                        // Check to make sure we're still on the same page
+                        if (currentPage != page)
+                            return;
+                        // Cancelled?
+                        if (loadVideosThread.CancellationPending)
+                            return;
                         // Update video players
-                        videoPlayersTemp.Add(position - (12 * page), texture);
+                        videoPlayers.Add(texture);
                     }
                 }
             }
-            // This adds the video players to the list in order
-            for (int i = 0; i < videoPlayersTemp.Count; i++)
+            // Done!
+            loadVideosThread.Dispose();
+            loadVideosThread = null;
+        }
+        public void ChangeVideos(GraphicsDevice graphicsDevice)
+        {
+            // Cancel previous thread
+            if (loadVideosThread != null)
             {
-                videoPlayers.Add(videoPlayersTemp[i]);
+                loadVideosThread.CancelAsync();
+                loadVideosThread.Dispose();
             }
+            // Clear video players
+            for(int i = 0; i < videoPlayers.Count; i++)
+            {
+                videoPlayers[i].Dispose();
+            }
+            videoPlayers.Clear();
+            // Start new thread
+            loadVideosThread = new BackgroundWorker();
+            loadVideosThread.DoWork += LoadVideosThread;
+            loadVideosThread.WorkerSupportsCancellation = true;
+            loadVideosThread.RunWorkerAsync(new object[] { graphicsDevice, page });
         }
         public bool Update(GameTime gameTime, bool handleInput)
         {
@@ -586,17 +629,20 @@ namespace YTPPlusPlusPlus
                                 GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                                 if(!currentLibraryType.Special)
                                 {
-                                    List<string> filters = new();
+                                    string filter = LibraryData.libraryNames[currentLibraryType] + "|";
                                     foreach (string extension in LibraryData.libraryFileTypes[currentLibraryType])
                                     {
-                                        filters.Add(extension + " files|*" + extension);
+                                        filter += "*" + extension + ";";
                                     }
+                                    // Trim last semicolon
+                                    filter = filter[..^1];
                                     // Add all files filter
-                                    filters.Add("All files|*.*");
+                                    filter += "|All files|*.*";
                                     System.Windows.Forms.OpenFileDialog openFileDialog = new()
                                     {
-                                        Filter = string.Join("|", filters),
-                                        Multiselect = true
+                                        Filter = filter,
+                                        Multiselect = true,
+                                        Title = "Add " + LibraryData.libraryNames[currentLibraryType]
                                     };
                                     if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                                     {
@@ -611,8 +657,8 @@ namespace YTPPlusPlusPlus
                                                 break;
                                             }
                                             libraryFileCache[currentLibraryType].Add(newFile);
-                                            demandChange = true;
                                         }
+                                        demandChange = true;
                                         if(!success)
                                         {
                                             GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);

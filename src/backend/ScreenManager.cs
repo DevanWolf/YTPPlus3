@@ -89,7 +89,7 @@ namespace YTPPlusPlusPlus
             }
             if(screen == null)
             {
-                ConsoleOutput.WriteLine("Screen not found: " + name);
+                ConsoleOutput.WriteLine("Screen not found: " + name, Color.Red);
                 return;
             }
             // Don't re-push the same screen.
@@ -132,7 +132,7 @@ namespace YTPPlusPlusPlus
             }
             if(screen == null)
             {
-                ConsoleOutput.WriteLine("Screen not found: " + hideScreen);
+                ConsoleOutput.WriteLine("Screen not found: " + hideScreen, Color.Red);
                 return;
             }
             // Set the screen to be hidden.
@@ -169,7 +169,7 @@ namespace YTPPlusPlusPlus
             }
             if(screen == null)
             {
-                ConsoleOutput.WriteLine("Screen not found: " + name);
+                ConsoleOutput.WriteLine("Screen not found: " + name, Color.Red);
                 return default;
             }
             return (T)screen;

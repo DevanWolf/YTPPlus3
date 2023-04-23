@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 
 namespace YTPPlusPlusPlus
 {
@@ -69,7 +72,7 @@ namespace YTPPlusPlusPlus
             }
             // Load all screens.
             ScreenManager.LoadScreens();
-            ConsoleOutput.WriteLine("Initialization complete.");
+            ConsoleOutput.WriteLine("Initialization complete.", Color.Green);
             base.Initialize();
         }
         protected override void LoadContent()

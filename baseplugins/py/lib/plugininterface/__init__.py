@@ -1,7 +1,7 @@
 # Plugin interface for YTP+++
 import os
 import random
-import sys
+import subprocess
 import json
 
 # There are two root types, video and audio
@@ -85,6 +85,20 @@ class YTPPlusPlusPlus:
     def addLibraryItem(self, type, path):
         # Add a new library item
         self.library.append(LibraryItem(type, path))
+    def printColored(self, message, r = 255, g = 255, b = 255):
+        # Print a colored message to the console
+        print("<[" + str(r) + "," + str(g) + "," + str(b) + "]>" + message)
+    def runCommand(self, command):
+        # Run ffmpeg but redirect output to stream
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        # Read output while ffmpeg is running
+        while True:
+            line = process.stderr.readline()
+            if not line:
+                break
+            print(line.decode("utf-8").rstrip())
+        # Wait for ffmpeg to finish
+        process.wait()
 
 # Global variable
 ytpplus = YTPPlusPlusPlus()

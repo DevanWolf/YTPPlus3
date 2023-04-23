@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using Microsoft.Xna.Framework;
 
 namespace YTPPlusPlusPlus
 {
@@ -28,6 +29,7 @@ namespace YTPPlusPlusPlus
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
+                
                 process.Start();
                 string s = "";
                 // Read stdout synchronously (on this thread)
@@ -49,7 +51,7 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine("Fatal error while getting length of video.");
+                ConsoleOutput.WriteLine("Fatal error while getting length of video.", Color.Red);
                 Global.generatorFactory.failureReason = "Fatal error while getting length of video.";
                 Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
                 Global.generatorFactory.CancelGeneration();
@@ -74,19 +76,25 @@ namespace YTPPlusPlusPlus
                 startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 startInfo.FileName = ffmpegLocation;
                 startInfo.Arguments = "-i \"" + video
-                        + "\" -ss " + startTime.ToString("0.#########################", new CultureInfo("en-US"))
-                        + " -to " + endTime.ToString("0.#########################", new CultureInfo("en-US"))
+                        + "\" -ss " + startTime.ToString(CultureInfo.InvariantCulture)
+                        + " -to " + endTime.ToString(CultureInfo.InvariantCulture)
                         + " -ac 1"
                         + " -ar 44100"
                         + " -vf scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30"
+                        + " -map_metadata -1"
                         + " -y"
                         + " \"" + output + "\"";
                 startInfo.UseShellExecute = false;
-                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    ConsoleOutput.WriteLine(e.Data);
+                };
                 process.Start();
+                process.BeginErrorReadLine();
                 process.WaitForExit();
 
                 if (process.HasExited && process.ExitCode == 1)
@@ -97,7 +105,7 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine("Fatal error while snipping video.");
+                ConsoleOutput.WriteLine("Fatal error while snipping video.", Color.Red);
                 Global.generatorFactory.failureReason = "Fatal error while snipping video.";
                 Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
                 Global.generatorFactory.CancelGeneration();
@@ -126,17 +134,22 @@ namespace YTPPlusPlusPlus
                         + " -y"
                         + " \"" + output + "\"";
                 startInfo.UseShellExecute = false;
-                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    ConsoleOutput.WriteLine(e.Data);
+                };
                 process.Start();
+                process.BeginErrorReadLine();
                 process.WaitForExit();
             }
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine("Fatal error while copying video.");
+                ConsoleOutput.WriteLine("Fatal error while copying video.", Color.Red);
                 Global.generatorFactory.failureReason = "Fatal error while copying video.";
                 Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
                 Global.generatorFactory.CancelGeneration();
@@ -162,10 +175,10 @@ namespace YTPPlusPlusPlus
                 {
                     if (File.Exists(Path.Combine(temporaryDirectory, "video" + i + ".mp4")))
                     {
-                        command1 += (" -i " + Path.Combine(temporaryDirectory, "video" + i + ".mp4"));
+                        command1 += " -i " + Path.Combine(temporaryDirectory, "video" + i + ".mp4");
                     }
                 }
-                command1 += (" -filter_complex \"");
+                command1 += " -filter_complex \"";
 
                 int realcount = 0;
                 for (int i = 0; i < count; i++)
@@ -177,11 +190,11 @@ namespace YTPPlusPlusPlus
                 }
                 for (int i = 0; i < realcount; i++)
                 {
-                    command1 += ("[" + i + ":v:0][" + i + ":a:0]");
+                    command1 += "[" + i + ":v:0][" + i + ":a:0]";
                 }
 
                 //realcount +=1;
-                command1 += ("concat=n=" + realcount + ":v=1:a=1[outv][outa]\" -map \"[outv]\" -map \"[outa]\" -y " + "\"" + ou + "\"");
+                command1 += "concat=n=" + realcount + ":v=1:a=1[outv][outa]\" -map [outv] -map [outa] -y " + "\"" + ou + "\"";
 
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
@@ -189,24 +202,22 @@ namespace YTPPlusPlusPlus
                 startInfo.FileName = ffmpegLocation;
                 startInfo.Arguments = command1;
                 startInfo.UseShellExecute = false;
-                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    ConsoleOutput.WriteLine(e.Data);
+                };
                 process.Start();
+                process.BeginErrorReadLine();
                 process.WaitForExit();
-
-                //cmdLine = CommandLine.parse(command2);
-                //executor = new DefaultExecutor();
-                //exitValue = executor.execute(cmdLine);
-
-                //temp.delete();
-
             }
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine("Trying a different method of concatenation.");
+                ConsoleOutput.WriteLine("Trying a different method of concatenation.", Color.Yellow);
                 Global.generatorFactory.progressText = "Trying a different method of concatenation.";
                 try
                 {
@@ -230,11 +241,16 @@ namespace YTPPlusPlusPlus
                             + "\" -c copy -y"
                             + " \"" + ou + "\"";
                     startInfo.UseShellExecute = false;
-                    startInfo.RedirectStandardOutput = true;
+                    startInfo.RedirectStandardError = true;
                     startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                     startInfo.CreateNoWindow = true;
                     process.StartInfo = startInfo;
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data);
+                    };
                     process.Start();
+                    process.BeginErrorReadLine();
                     process.WaitForExit();
                 }
                 catch(Exception ex2)
@@ -266,11 +282,16 @@ namespace YTPPlusPlusPlus
                         + "\" -i \"" + overlay
                         + "\" -filter_complex \"[1:v]colorkey=0x00FF00:0.3:0.2,scale=" + SaveData.saveValues["VideoWidth"] + "x" + SaveData.saveValues["VideoHeight"] + ",setsar=1:1,fps=fps=30[outv];[0:v][outv]overlay=shortest=1[finalv];[0:a][1:a]amix=inputs=2:duration=shortest[outa]\" -map \"[finalv]\" -map \"[outa]\" -y \"" + overlayed_video + "\"";
                 startInfo.UseShellExecute = false;
-                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
                 startInfo.WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    ConsoleOutput.WriteLine(e.Data);
+                };
                 process.Start();
+                process.BeginErrorReadLine();
                 process.WaitForExit();
 
                 // Rename the temporary file to the original file
@@ -281,10 +302,8 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine("Fatal error while overlaying video.");
-                Global.generatorFactory.failureReason = "Fatal error while overlaying video.";
-                Global.generatorFactory.progressText = Global.generatorFactory.failureReason;
-                Global.generatorFactory.CancelGeneration();
+                ConsoleOutput.WriteLine("Skipping overlaying video.", Color.Yellow);
+                Global.generatorFactory.progressText = "Skipping overlaying video.";
             }
         }
     }

@@ -4,6 +4,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace YTPPlusPlusPlus
 {    
@@ -26,13 +27,14 @@ namespace YTPPlusPlusPlus
         public static bool[] GetDependencyStatus()
         {
             // Test for dependencies.
-            ConsoleOutput.WriteLine("Checking for dependencies...");
+            ConsoleOutput.WriteLine("Checking for dependencies...", Microsoft.Xna.Framework.Color.Magenta);
             bool[] status = new bool[5];
             string[] commands = new string[5]
             {
                 "ffmpeg",
                 "ffprobe",
-                "python",
+                // python 3: we can't use "python" because it can refer to python 2.
+                "python3",
                 "node",
                 "magick"
             };
@@ -68,7 +70,7 @@ namespace YTPPlusPlusPlus
             {
                 "ffmpeg",
                 "ffprobe",
-                "python",
+                "python3",
                 "node",
                 "magick"
             };
@@ -109,7 +111,7 @@ namespace YTPPlusPlusPlus
                                   latestVersionInt[2] > currentVersionInt[2];
                     if (!update)
                     {
-                        ConsoleOutput.WriteLine("No updates available.");
+                        ConsoleOutput.WriteLine("No updates available.", Microsoft.Xna.Framework.Color.Magenta);
                         return false;
                     }
                     // Get download URL.
@@ -122,19 +124,19 @@ namespace YTPPlusPlusPlus
                     {
                         updateTag = latestVersion;
                     }
-                    ConsoleOutput.WriteLine("Update available: " + latestVersion);
+                    ConsoleOutput.WriteLine("Update available: " + latestVersion, Microsoft.Xna.Framework.Color.Magenta);
                     updateAvailable = true;
                     return true;
                 }
                 else
                 {
-                    ConsoleOutput.WriteLine("No updates available.");
+                    ConsoleOutput.WriteLine("No updates available.", Microsoft.Xna.Framework.Color.Magenta);
                     return false;
                 }
             }
             catch(Exception e)
             {
-                ConsoleOutput.WriteLine("Failed to check for updates: " + e.Message);
+                ConsoleOutput.WriteLine("Failed to check for updates: " + e.Message, Microsoft.Xna.Framework.Color.Red);
                 updateFailed = true;
                 return false;
             }
@@ -143,12 +145,12 @@ namespace YTPPlusPlusPlus
         {
             if (updateUrl == "")
             {
-                ConsoleOutput.WriteLine("No update URL.");
+                ConsoleOutput.WriteLine("No update URL.", Microsoft.Xna.Framework.Color.Magenta);
                 return;
             }
             try
             {
-                ConsoleOutput.WriteLine("Downloading update...");
+                ConsoleOutput.WriteLine("Downloading update...", Microsoft.Xna.Framework.Color.Magenta);
                 // Download update.
                 HttpClient client = new();
                 byte[] data = client.GetByteArrayAsync(updateUrl).Result;
@@ -162,14 +164,14 @@ namespace YTPPlusPlusPlus
                     string? path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     if (path != null)
                     {
-                        ConsoleOutput.WriteLine("Unzipping update...");
+                        ConsoleOutput.WriteLine("Unzipping update...", Microsoft.Xna.Framework.Color.Magenta);
                         string updatePath = Path.Combine(path, "update");
                         if (!Directory.Exists(updatePath))
                         {
                             Directory.CreateDirectory(updatePath);
                         }
                         System.IO.Compression.ZipFile.ExtractToDirectory(fileName, updatePath);
-                        ConsoleOutput.WriteLine("Update extracted. Applying update...");
+                        ConsoleOutput.WriteLine("Update extracted. Applying update...", Microsoft.Xna.Framework.Color.Magenta);
                         // Create a batch script to move the update to the main folder.
                         // We can't do this directly because the program is still running.
                         List<string> batchScript = new()
@@ -202,19 +204,19 @@ namespace YTPPlusPlusPlus
                     }
                     else
                     {
-                        ConsoleOutput.WriteLine("Failed to obtain path.");
+                        ConsoleOutput.WriteLine("Failed to obtain path.", Microsoft.Xna.Framework.Color.Red);
                         return;
                     }
                 }
                 else
                 {
-                    ConsoleOutput.WriteLine("Failed to obtain version.");
+                    ConsoleOutput.WriteLine("Failed to obtain version.", Microsoft.Xna.Framework.Color.Red);
                     return;
                 }
             }
             catch
             {
-                ConsoleOutput.WriteLine("Failed to download update.");
+                ConsoleOutput.WriteLine("Failed to download update.", Microsoft.Xna.Framework.Color.Red);
             }
         }
     }

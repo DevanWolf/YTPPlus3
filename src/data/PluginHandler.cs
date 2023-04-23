@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace YTPPlusPlusPlus
 {
@@ -32,7 +33,7 @@ namespace YTPPlusPlusPlus
             {
                 return false;
             }
-            ConsoleOutput.WriteLine($"Calling plugin {Path.GetFileName(path)}");
+            ConsoleOutput.WriteLine($"Calling plugin {Path.GetFileName(path)}", Color.LightBlue);
             switch (type)
             {
                 case PluginType.NodeJS:
@@ -57,15 +58,30 @@ namespace YTPPlusPlusPlus
                         WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true
                     };
                     Process process = new()
                     {
                         StartInfo = startInfo
                     };
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data);
+                    };
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                    };
                     process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
                     process.WaitForExit();
-                    return true;
+                    if (process.ExitCode == 0)
+                    {
+                        return true;
+                    }
+                    return false;
                 case PluginType.Batch:
                     // Batch plugins are the simplest.
                     List<string> batchArgs = new()
@@ -90,15 +106,30 @@ namespace YTPPlusPlusPlus
                         WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true
                     };
                     Process batchProcess = new()
                     {
                         StartInfo = batchStartInfo
                     };
+                    batchProcess.OutputDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data);
+                    };
+                    batchProcess.ErrorDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                    };
                     batchProcess.Start();
+                    batchProcess.BeginOutputReadLine();
+                    batchProcess.BeginErrorReadLine();
                     batchProcess.WaitForExit();
-                    return true;
+                    if (batchProcess.ExitCode == 0)
+                    {
+                        return true;
+                    }
+                    return false;
                 case PluginType.Python:
                     // Python plugins take full advantage of YTP+++ features.
                     // The only argument is the video path.
@@ -107,22 +138,37 @@ namespace YTPPlusPlusPlus
                     Environment.SetEnvironmentVariable("PYTHONPATH", Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins", "py", "lib"));
                     ProcessStartInfo pythonStartInfo = new()
                     {
-                        FileName = "python",
+                        FileName = "python3",
                         Arguments = $".\\py\\{Path.GetFileName(path)} generate \"{Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), video)}\"",
                         WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true,
                     };
                     Process pythonProcess = new()
                     {
                         StartInfo = pythonStartInfo
                     };
+                    pythonProcess.OutputDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data);
+                    };
+                    pythonProcess.ErrorDataReceived += (sender, e) =>
+                    {
+                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                    };
                     pythonProcess.Start();
+                    pythonProcess.BeginOutputReadLine();
+                    pythonProcess.BeginErrorReadLine();
                     pythonProcess.WaitForExit();
                     // Remove plugins/py/lib from path.
                     Environment.SetEnvironmentVariable("PYTHONPATH", pythonPath);
-                    return true;
+                    if (pythonProcess.ExitCode == 0)
+                    {
+                        return true;
+                    }
+                    return false;
                 default:
                     return false;
             }
@@ -140,24 +186,33 @@ namespace YTPPlusPlusPlus
             // Capture output from plugin.
             ProcessStartInfo pythonStartInfo = new()
             {
-                FileName = "python",
+                FileName = "python3",
                 Arguments = $".\\py\\{Path.GetFileName(path)} query",
                 WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 CreateNoWindow = true,
             };
             Process pythonProcess = new()
             {
                 StartInfo = pythonStartInfo
             };
+            string output = "";
+            pythonProcess.OutputDataReceived += (sender, e) =>
+            {
+                output += e.Data;
+            };
+            pythonProcess.ErrorDataReceived += (sender, e) =>
+            {
+                ConsoleOutput.WriteLine(e.Data, Color.Red);
+            };
             pythonProcess.Start();
-            string output = pythonProcess.StandardOutput.ReadToEnd();
             pythonProcess.WaitForExit();
             // Check for errors.
             if (pythonProcess.ExitCode != 0)
             {
-                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} returned an error code.");
+                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} returned an error code.", Color.Red);
                 for (int i = 0; i < output.Split('\n').Length; i++)
                 {
                     ConsoleOutput.WriteLine(output.Split('\n')[i]);
@@ -189,12 +244,12 @@ namespace YTPPlusPlusPlus
                 LibraryData.libraryFileTypes.Add(dummyType, fileExts);
                 LibraryData.libraryNames.Add(dummyType, split[1].Replace("_", " "));
                 // Print to console.
-                ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.");
+                ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.", Color.Green);
                 count++;
             }
             // Print count
             if (count > 0)
-                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} added {count} libraries.");
+                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} added {count} libraries.", Color.LightBlue);
             return true;
         }
     }
@@ -211,7 +266,7 @@ namespace YTPPlusPlusPlus
             if(!plugin.Query())
                 throw new Exception($"Failed to query plugin {Path.GetFileName(path)}.");
             plugins.Add(plugin);
-            ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.");
+            ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.", Color.Green);
         }
         private static void LoadPluginsRecursive(string path, PluginType type)
         {
@@ -257,12 +312,14 @@ namespace YTPPlusPlusPlus
         }
         public static bool LoadPlugins()
         {
+            // Clear plugins.
+            plugins.Clear();
             // Create plugin directory if it doesn't exist.
             if(Directory.Exists(pluginPath) == false)
             {
                 Directory.CreateDirectory(pluginPath);
             }
-            ConsoleOutput.WriteLine($"Searching for plugins in {pluginPath}...");
+            ConsoleOutput.WriteLine($"Searching for plugins in {pluginPath}...", Color.LightBlue);
             List<string> pluginDirs = new()
             {
                 "py",
@@ -298,13 +355,13 @@ namespace YTPPlusPlusPlus
                     }
                     if (type == PluginType.None)
                         continue;
-                    ConsoleOutput.WriteLine($"Loading {dirName} plugins...");
+                    ConsoleOutput.WriteLine($"Loading {dirName} plugins...", Color.LightBlue);
                     LoadPluginsRecursive(file, type);
                 }
             }
             catch (Exception e)
             {
-                ConsoleOutput.WriteLine($"Error loading plugins: {e.Message}");
+                ConsoleOutput.WriteLine($"Error loading plugins: {e.Message}", Color.Red);
                 return false;
             }
             return true;

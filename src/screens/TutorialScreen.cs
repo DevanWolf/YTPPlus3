@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -78,15 +79,16 @@ namespace YTPPlusPlusPlus
         public bool Update(GameTime gameTime, bool handleInput)
         {
             // When animation is done, set screen type
-            if (screenType == ScreenType.Drawn && hiding && offset.Y == GlobalGraphics.Scale(240))
+            if (hiding && offset.Y == GlobalGraphics.Scale(240))
             {
                 screenType = ScreenType.Hidden;
                 hiding = false;
             }
-            else if (screenType == ScreenType.Hidden && showing)
+            else if (showing)
             {
                 screenType = ScreenType.Drawn;
                 showing = false;
+                hiding = false;
             }
             // Tween
             tween.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -202,9 +204,16 @@ namespace YTPPlusPlusPlus
                 int offsetText = 0;
                 for(int j = 0; j < tutorialText[i].Count; j++)
                 {
-                    Vector2 textSize = GlobalGraphics.fontMunroSmall.MeasureString(tutorialText[i][j]);
-                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tutorialText[i][j], new Vector2(GlobalGraphics.Scale(8+16+1+320*i), GlobalGraphics.Scale(60+offsetText+1)), Color.Black);
-                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, tutorialText[i][j], new Vector2(GlobalGraphics.Scale(8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.White);
+                    string dummyText = tutorialText[i][j];
+                    dummyText = dummyText.Replace("%FFMPEG%", "Checking...");
+                    dummyText = dummyText.Replace("%FFPROBE%", "Checking...");
+                    dummyText = dummyText.Replace("%PYTHON%", "Checking...");
+                    dummyText = dummyText.Replace("%NODEJS%", "Checking...");
+                    dummyText = dummyText.Replace("%IMAGEMAGICK%", "Checking...");
+                    dummyText = dummyText.Replace("%UPDATECHECK%", "Checking...");
+                    Vector2 textSize = GlobalGraphics.fontMunroSmall.MeasureString(dummyText);
+                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, dummyText, new Vector2(GlobalGraphics.Scale(8+16+1+320*i), GlobalGraphics.Scale(60+offsetText+1)), Color.Black);
+                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, dummyText, new Vector2(GlobalGraphics.Scale(8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.White);
                     // Draw red overlay if prerequisite is not met
                     if(tutorialText[i][j].Contains("Not installed"))
                     {
@@ -271,6 +280,30 @@ namespace YTPPlusPlusPlus
                         int offset = 68;
                         spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Failed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
                     }
+                    // Draw yellow overlay if checking
+                    if(dummyText.Contains("Checking..."))
+                    {
+                        int offset = 68;
+                        switch(j)
+                        {
+                            case 4:
+                                offset = 43;
+                                break;
+                            case 5:
+                                offset = 47;
+                                break;
+                            case 6:
+                                offset = 45;
+                                break;
+                            case 9:
+                                offset = 43;
+                                break;
+                            case 10:
+                                offset = 64;
+                                break;
+                        }
+                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Checking...", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.Yellow);
+                    }
                     offsetText += GlobalGraphics.Scale(4);
                 }
                 offsetPage += offsetText + GlobalGraphics.Scale(16);
@@ -282,6 +315,79 @@ namespace YTPPlusPlusPlus
                 BlendState.AlphaBlend,
                 SamplerState.PointClamp,
                 null, null, null, null);
+        }
+        private BackgroundWorker dependencyWorker;
+        private void DependencyCheckThread(object? sender, DoWorkEventArgs e)
+        {
+            // Get dependencies.
+            UpdateManager.GetDependencyStatus();
+            foreach(string s in UpdateManager.GetDependencies().Split('\n'))
+            {
+                ConsoleOutput.WriteLine(s);
+            }
+            for (int h = 0; h < tutorialText.Length; h++)
+            {
+                for (int j = 0; j < tutorialText[h].Count; j++)
+                {
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%PYTHON%", UpdateManager.pythonInstalled ? "Installed" : "Not installed");
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%NODEJS%", UpdateManager.nodeInstalled ? "Installed" : "Not installed");
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
+                }
+            }
+            // Dispose of worker
+            dependencyWorker.Dispose();
+            dependencyWorker = null;
+        }
+        private BackgroundWorker updateWorker;
+        private void UpdateCheckThread(object? sender, DoWorkEventArgs e)
+        {
+            // Check for updates.
+            UpdateManager.CheckForUpdates();
+            for (int h = 0; h < tutorialText.Length; h++)
+            {
+                for (int j = 0; j < tutorialText[h].Count; j++)
+                {
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%UPDATECHECK%", UpdateManager.updateFailed ? "Failed (v" + Global.productVersion + ")" : (UpdateManager.updateAvailable ? "Available (v" + Global.productVersion + " -> " + UpdateManager.updateTag + ")" : "Up to date (v" + Global.productVersion + ")"));
+                }
+            }
+            // Dispose of worker
+            updateWorker.Dispose();
+            updateWorker = null;
+        }
+        private bool check3 = false;
+        private BackgroundWorker pluginWorker;
+        private void PluginCheckThread(object? sender, DoWorkEventArgs e)
+        {
+            if(!Global.pluginsLoaded)
+                Global.pluginsLoaded = PluginHandler.LoadPlugins();
+            if(Global.pluginsLoaded)
+            {
+                SaveData.saveValues["FirstBoot"] = "false";
+                SaveData.Save();
+                GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                toggle = false;
+                tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), GlobalGraphics.Scale(240)), 0.5f)
+                    .Easing(EasingFunctions.ExponentialOut);
+                hiding = true;
+                ScreenManager.PushNavigation("Main Menu");
+                ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Show();
+                ScreenManager.PushNavigation("Video");
+                ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
+                ScreenManager.PushNavigation("Content");
+                ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
+            }
+            else
+            {
+                GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                ScreenManager.PushNavigation("Console");
+                ScreenManager.GetScreen<ConsoleScreen>("Console")?.Show();
+            }
+            check3 = false;
+            // Dispose of worker
+            pluginWorker.Dispose();
+            pluginWorker = null;
         }
         public void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
@@ -296,24 +402,10 @@ namespace YTPPlusPlusPlus
                         GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         if(!check)
                         {
-                            ConsoleOutput.WriteLine("Getting dependencies...");
-                            UpdateManager.GetDependencyStatus();
-                            foreach(string s in UpdateManager.GetDependencies().Split('\n'))
-                            {
-                                ConsoleOutput.WriteLine(s);
-                            }
-                            for (int h = 0; h < tutorialText.Length; h++)
-                            {
-                                for (int j = 0; j < tutorialText[h].Count; j++)
-                                {
-                                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
-                                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
-                                    tutorialText[h][j] = tutorialText[h][j].Replace("%PYTHON%", UpdateManager.pythonInstalled ? "Installed" : "Not installed");
-                                    tutorialText[h][j] = tutorialText[h][j].Replace("%NODEJS%", UpdateManager.nodeInstalled ? "Installed" : "Not installed");
-                                    tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
-                                }
-                            }
                             check = true;
+                            dependencyWorker = new BackgroundWorker();
+                            dependencyWorker.DoWork += DependencyCheckThread;
+                            dependencyWorker.RunWorkerAsync();
                         }
                         tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-320), 0), 0.5f)
                             .Easing(EasingFunctions.ExponentialOut);
@@ -331,15 +423,10 @@ namespace YTPPlusPlusPlus
                             GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             if(!check2)
                             {
-                                UpdateManager.CheckForUpdates();
-                                for (int h = 0; h < tutorialText.Length; h++)
-                                {
-                                    for (int j = 0; j < tutorialText[h].Count; j++)
-                                    {
-                                        tutorialText[h][j] = tutorialText[h][j].Replace("%UPDATECHECK%", UpdateManager.updateFailed ? "Failed (v" + Global.productVersion + ")" : (UpdateManager.updateAvailable ? "Available (v" + Global.productVersion + " -> " + UpdateManager.updateTag + ")" : "Up to date (v" + Global.productVersion + ")"));
-                                    }
-                                }
                                 check2 = true;
+                                updateWorker = new BackgroundWorker();
+                                updateWorker.DoWork += UpdateCheckThread;
+                                updateWorker.RunWorkerAsync();
                             }
                             tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), 0), 0.5f)
                                 .Easing(EasingFunctions.ExponentialOut);
@@ -379,27 +466,13 @@ namespace YTPPlusPlusPlus
                 switch(i)
                 {
                     case 2: // left click
-                        if(!Global.pluginsLoaded)
-                            Global.pluginsLoaded = PluginHandler.LoadPlugins();
-                        if(Global.pluginsLoaded)
+                        GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        if(!check3)
                         {
-                            SaveData.saveValues["FirstBoot"] = "false";
-                            SaveData.Save();
-                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                            toggle = false;
-                            tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-640), GlobalGraphics.Scale(240)), 0.5f)
-                                .Easing(EasingFunctions.ExponentialOut);
-                            hiding = true;
-                            ScreenManager.PushNavigation("Main Menu");
-                            ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Show();
-                            ScreenManager.PushNavigation("Video");
-                            ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
-                            ScreenManager.PushNavigation("Content");
-                            ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
-                        }
-                        else
-                        {
-                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            check3 = true;
+                            pluginWorker = new BackgroundWorker();
+                            pluginWorker.DoWork += PluginCheckThread;
+                            pluginWorker.RunWorkerAsync();
                         }
                         return true;
                 }

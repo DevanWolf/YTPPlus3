@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Microsoft.Xna.Framework;
 
 namespace YTPPlusPlusPlus
 {
@@ -43,7 +44,7 @@ namespace YTPPlusPlusPlus
             // Check to ensure that the source pool is not empty.
             if(LibraryData.GetFileCount(DefaultLibraryTypes.Material) == 0)
             {
-                ConsoleOutput.WriteLine("No material files found in library.");
+                ConsoleOutput.WriteLine("No material files found in library.", Color.Red);
                 failureReason = "No material files found in library.";
                 progressText = failureReason;
                 CancelGeneration();
@@ -60,7 +61,7 @@ namespace YTPPlusPlusPlus
             {
                 seed += (int)c;
             }
-            ConsoleOutput.WriteLine("Seed: " + seed);
+            ConsoleOutput.WriteLine("Seed: " + seed, Color.Gray);
             globalRandom = new Random(seed);
 
             string tempOutput = Path.Combine(Utilities.temporaryDirectory, "tempoutput.mp4");
@@ -103,7 +104,7 @@ namespace YTPPlusPlusPlus
                         else
                         {
                             maxClips++;
-                            ConsoleOutput.WriteLine("Intro clip enabled, adding 1 to max clips. New max clips is " + maxClips + ".");
+                            ConsoleOutput.WriteLine("Intro clip enabled, adding 1 to max clips. New max clips is " + maxClips + ".", Color.Gray);
                             progress = Convert.ToInt32(((float)i / (float)maxClips));
                             progressText = "Introducing ourselves... (" + (i + 1) + " of " + maxClips + ")";
                             Utilities.CopyVideo(introPath, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
@@ -120,17 +121,17 @@ namespace YTPPlusPlusPlus
                         string sourceToPick = LibraryData.PickRandom(DefaultLibraryTypes.Material, globalRandom);
                         if(sourceToPick == "")
                         {
-                            ConsoleOutput.WriteLine("No material files found in library.");
+                            ConsoleOutput.WriteLine("No material files found in library.", Color.Gray);
                             progressState = ProgressState.Failed;
                             continue;
                         }
-                        ConsoleOutput.WriteLine(sourceToPick);
+                        ConsoleOutput.WriteLine(sourceToPick, Color.Gray);
                         float source = float.Parse(Utilities.GetLength(sourceToPick), NumberStyles.Any, new CultureInfo("en-US"));
                         string output = source.ToString("0.#########################", new CultureInfo("en-US"));
                         //ConsoleOutput.WriteLine(Utilities.GetLength(sourceToPick) + " -> " + output + " -> " + float.Parse(output, NumberStyles.Any, new CultureInfo("en-US")));
                         float outputDuration = float.Parse(output, NumberStyles.Any, new CultureInfo("en-US"));
-                        ConsoleOutput.WriteLine("CLIP DURATION: " + outputDuration);
-                        ConsoleOutput.WriteLine("STARTING CLIP " + "video" + i);
+                        ConsoleOutput.WriteLine("CLIP DURATION: " + outputDuration, Color.Gray);
+                        ConsoleOutput.WriteLine("STARTING CLIP " + "video" + i, Color.Gray);
                         float startOfClip = RandomFloat(0f, outputDuration - float.Parse(SaveData.saveValues["MinStreamDuration"]));
                         float endOfClip = startOfClip + RandomFloat(float.Parse(SaveData.saveValues["MinStreamDuration"]), float.Parse(SaveData.saveValues["MaxStreamDuration"]));
                         // Ensure that the start is not less than 0 and the end is not greater than the source length.
@@ -150,8 +151,8 @@ namespace YTPPlusPlusPlus
                                 rolledForOverlay = false;
                             }
                         }
-                        ConsoleOutput.WriteLine("Beginning of clip " + i + ": " + startOfClip.ToString("0.#########################", new CultureInfo("en-US")));
-                        ConsoleOutput.WriteLine("Ending of clip " + i + ": " + endOfClip.ToString("0.#########################", new CultureInfo("en-US")) + ", in seconds: ");
+                        ConsoleOutput.WriteLine("Beginning of clip " + i + ": " + startOfClip, Color.Gray);
+                        ConsoleOutput.WriteLine("Ending of clip " + i + ": " + endOfClip, Color.Gray);
                         // Insert transition if rolled, ensure that there is a transition as well.
                         //bool alreadySnipped = false;
                         bool rolledForTransition = RandomInt(0, 100) <= int.Parse(SaveData.saveValues["TransitionChance"]) && bool.Parse(SaveData.saveValues["TransitionsEnabled"]);
@@ -160,7 +161,7 @@ namespace YTPPlusPlusPlus
                             string transitionPath = LibraryData.PickRandom(DefaultLibraryTypes.Transition, globalRandom);
                             if(transitionPath == "")
                             {
-                                ConsoleOutput.WriteLine("No transitions found in library.");
+                                ConsoleOutput.WriteLine("No transitions found in library.", Color.Yellow);
                                 continue;
                             }
                             progressText = "Transitioning... (" + (i + 1) + " of " + maxClips + ")";
@@ -173,7 +174,7 @@ namespace YTPPlusPlusPlus
                             Utilities.SnipVideo(sourceToPick, startOfClip, endOfClip, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
                         }
                         if(!rolledForOverlay && rolledForTransition)
-                            ConsoleOutput.WriteLine("No transitions found in library.");
+                            ConsoleOutput.WriteLine("No transitions found in library.", Color.Yellow);
                         if (vidThreadWorker?.CancellationPending == true)
                             return;
                         // Parse overlay if rolled.
@@ -181,11 +182,11 @@ namespace YTPPlusPlusPlus
                         {
                             if(overlayPath == null)
                             {
-                                ConsoleOutput.WriteLine("No overlays found in library.");
+                                ConsoleOutput.WriteLine("No overlays found in library.", Color.Yellow);
                                 continue;
                             }
                             progressText = "Chroma keying... (" + (i + 1) + " of " + maxClips + ")";
-                            ConsoleOutput.WriteLine("Rolled for overlay, adding overlay to clip " + i + ".");
+                            ConsoleOutput.WriteLine("Rolled for overlay, adding overlay to clip " + i + ".", Color.Gray);
                             // We snip the clip here in case it was a transition
                             //if(!alreadySnipped)
                                 //Utilities.SnipVideo(sourceToPick, startOfClip, endOfClip, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
@@ -214,10 +215,8 @@ namespace YTPPlusPlusPlus
                                 {
                                     progressText = "Baking effects... (" + (i + 1) + " of " + maxClips + ")";
                                     // We rolled for an effect, let's pick one.
-                                    if(!PluginHandler.PickRandom(globalRandom, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4")))
-                                    {
-                                        ConsoleOutput.WriteLine("Failed to apply effect to clip " + i + ".");
-                                    }
+                                    bool effect = PluginHandler.PickRandom(globalRandom, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
+                                    ConsoleOutput.WriteLine(effect ? "Applied effect to clip " + i + "." : "Failed to apply effect to clip " + i + ".", effect ? Color.LightGreen : Color.Red);
                                 }
                             }
                         }
@@ -227,7 +226,7 @@ namespace YTPPlusPlusPlus
                             // Plugin testing will force a specific plugin to be applied to every clip.
                             if(!PluginHandler.PickNamed(SaveData.saveValues["PluginTest"], Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4")))
                             {
-                                ConsoleOutput.WriteLine("Failed to apply effect to clip " + i + ".");
+                                ConsoleOutput.WriteLine("Failed to apply effect to clip " + i + ".", Color.Red);
                             }
                         }
                     }
@@ -237,7 +236,7 @@ namespace YTPPlusPlusPlus
                     string outroPath = LibraryData.PickRandom(DefaultLibraryTypes.Outro, globalRandom);
                     if(outroPath == "")
                     {
-                        ConsoleOutput.WriteLine("No outros found in library.");
+                        ConsoleOutput.WriteLine("No outros found in library.", Color.Yellow);
                         outroPath = "";
                     }
                     else
@@ -246,8 +245,8 @@ namespace YTPPlusPlusPlus
                             return;
                         maxClips++;
                         progressText = "Closing the film spool... (" + maxClips + " of " + maxClips + ")";
-                        ConsoleOutput.WriteLine("Outro clip enabled, adding 1 to max clips. New max clips is " + maxClips + ".");
-                        ConsoleOutput.WriteLine("STARTING CLIP " + "video" + maxClips);
+                        ConsoleOutput.WriteLine("Outro clip enabled, adding 1 to max clips. New max clips is " + maxClips + ".", Color.Gray);
+                        ConsoleOutput.WriteLine("STARTING CLIP " + "video" + maxClips, Color.Gray);
                         Utilities.CopyVideo(outroPath, Path.Combine(Utilities.temporaryDirectory, "video" + maxClips + ".mp4"));
                         maxClips++;
                     }
@@ -255,7 +254,7 @@ namespace YTPPlusPlusPlus
                 if (vidThreadWorker?.CancellationPending == true)
                     return;
                 // Concatenate all clips into one video.
-                ConsoleOutput.WriteLine("Concatenating clips...");
+                ConsoleOutput.WriteLine("Concatenating clips...", Color.Gray);
                 progressText = "Concatenating clips...";
                 progressState = ProgressState.Concatenating;
                 Utilities.ConcatenateVideo(maxClips, tempOutput);
@@ -264,7 +263,7 @@ namespace YTPPlusPlusPlus
                 // Save to library if enabled.
                 if (bool.Parse(SaveData.saveValues["AddToLibrary"]))
                 {
-                    ConsoleOutput.WriteLine("Saving to library...");
+                    ConsoleOutput.WriteLine("Saving to library...", Color.Gray);
                     LibraryFile libraryFile = new LibraryFile(SaveData.saveValues["ProjectTitle"], tempOutput, DefaultLibraryTypes.Render);
                     progressText = "Saving to library...";
                     LibraryData.Load(libraryFile);
@@ -278,7 +277,7 @@ namespace YTPPlusPlusPlus
                 progressState = ProgressState.Failed;
                 failureReason = ex.Message;
                 progressText = failureReason;
-                ConsoleOutput.WriteLine("An error occurred while generating the video.");
+                ConsoleOutput.WriteLine("An error occurred while generating the video.", Color.Red);
                 ConsoleOutput.WriteLine(ex.Message);
             }
             //CleanUp();
@@ -305,11 +304,11 @@ namespace YTPPlusPlusPlus
             }
             if(vidThreadWorker.IsBusy)
             {
-                ConsoleOutput.WriteLine("Generation already in progress.");
+                ConsoleOutput.WriteLine("Generation is busy and cannot be cancelled.", Color.Red);
                 return;
             }
             vidThreadWorker.RunWorkerAsync();
-            ConsoleOutput.WriteLine("Generation started.");
+            ConsoleOutput.WriteLine("Generation started.", Color.Green);
         }
         public void ToggleGeneration(ProgressChangedEventHandler progressReporter, RunWorkerCompletedEventHandler completedReporter)
         {
@@ -320,15 +319,23 @@ namespace YTPPlusPlusPlus
             if(vidThreadWorker != null)
             {
                 // Make sure it's not completed or cancelled already.
-                //if(vidThreadWorker.IsBusy)
                 vidThreadWorker.CancelAsync();
                 generatorActive = false;
                 progressState = ProgressState.Failed;
                 if(user)
                 {
-                    failureReason = "Generation cancelled.";
-                    progressText = failureReason;
-                    ConsoleOutput.WriteLine("Generation cancelled.");
+                    if(vidThreadWorker.IsBusy)
+                    {
+                        failureReason = "Generation busy, waiting...";
+                        progressText = failureReason;
+                        ConsoleOutput.WriteLine("Generation busy, waiting...", Color.Yellow);
+                    }
+                    else
+                    {
+                        failureReason = "Generation cancelled.";
+                        progressText = failureReason;
+                        ConsoleOutput.WriteLine("Generation cancelled.", Color.Red);
+                    }
                 }
 
             }
@@ -348,11 +355,11 @@ namespace YTPPlusPlusPlus
                 try
                 {
                     Directory.Delete(Utilities.temporaryDirectory, true);
-                    ConsoleOutput.WriteLine("Temporary directory deleted.");
+                    ConsoleOutput.WriteLine("Temporary directory deleted.", Color.Gray);
                 }
                 catch
                 {
-                    ConsoleOutput.WriteLine("Temporary directory could not be deleted.");
+                    ConsoleOutput.WriteLine("Temporary directory could not be deleted.", Color.Red);
                 }
             }
         }

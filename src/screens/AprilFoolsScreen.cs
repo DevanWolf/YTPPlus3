@@ -79,6 +79,8 @@ namespace YTPPlusPlusPlus
         }
         public bool Update(GameTime gameTime, bool handleInput)
         {
+            if(!handleInput)
+                return false;
             // time increases exponentially
             if(waiting)
             {
@@ -195,7 +197,7 @@ namespace YTPPlusPlusPlus
         public void Show()
         {
             toggle = true;
-            offset = new(0, GlobalGraphics.Scale(240*2)); // from bottom to top
+            offset = new(0, GlobalGraphics.Scale(240)); // from bottom to top
             tween.TweenTo(this, t => t.offset, new Vector2(0, 0), 0.5f)
                 .Easing(EasingFunctions.ExponentialOut);
             showing = true;
@@ -204,7 +206,7 @@ namespace YTPPlusPlusPlus
         {
             toggle = false;
             offset = new(0, 0); // from top to bottom
-            tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(240*2)), 0.5f)
+            tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(240*2)), 1f)
                 .Easing(EasingFunctions.ExponentialOut);
             hiding = true;
         }
@@ -239,14 +241,16 @@ namespace YTPPlusPlusPlus
         }
         public bool Update(GameTime gameTime, bool handleInput)
         {
-            if(screenType == ScreenType.Hidden)
-            {
-                return false;
-            }
             // When animation is done, set screen type
-            if (screenType == ScreenType.Drawn && hiding && offset.Y == GlobalGraphics.Scale(240*2))
+            if (hiding && offset.Y == GlobalGraphics.Scale(240*2))
             {
                 screenType = ScreenType.Hidden;
+                hiding = false;
+            }
+            else if (showing)
+            {
+                screenType = ScreenType.Drawn;
+                showing = false;
                 hiding = false;
                 // Reset state
                 obstacles.Clear();
@@ -254,21 +258,15 @@ namespace YTPPlusPlusPlus
                 obstacles.Add(new AprilFoolsFlappyBirdObstacle(320 / 2));
                 player = new AprilFoolsFlappyBirdPlayer();
             }
-            else if (screenType == ScreenType.Hidden && showing)
-            {
-                screenType = ScreenType.Drawn;
-                showing = false;
-            }
+            handleInput = handleInput && !hiding && !showing;
             // Tween
             tween.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            if(hiding)
-                return false;
             // Update obstacles
             foreach (AprilFoolsFlappyBirdObstacle obstacle in obstacles)
             {
                 obstacle.Update(gameTime, handleInput);
             }
-            if (MouseInput.LastMouseState.RightButton == ButtonState.Released && MouseInput.MouseState.RightButton == ButtonState.Pressed && handleInput)
+            if (handleInput && MouseInput.LastMouseState.RightButton == ButtonState.Released && MouseInput.MouseState.RightButton == ButtonState.Pressed && handleInput)
             {
                 GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                 Hide();
@@ -297,9 +295,9 @@ namespace YTPPlusPlusPlus
                         GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         player.dead = true;
                         // timer in 0.05 seconds
-                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 100f;
-                        tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(10)), 0.1f)
-                            .Easing(EasingFunctions.ElasticInOut);
+                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
+                        tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(10)), 0.01f)
+                            .Easing(EasingFunctions.Linear);
                         phase = 1;
                         break;
                     }
@@ -319,7 +317,7 @@ namespace YTPPlusPlusPlus
                             SaveData.Save();
                             // get random high score tease
                             int rand = Global.generatorFactory.globalRandom.Next(0, highScoreTeases.Count);
-                            ConsoleOutput.WriteLine(highScoreTeases[rand] + " New high score: " + highScore);
+                            ConsoleOutput.WriteLine(highScoreTeases[rand] + " New high score: " + highScore, Color.Cyan);
                         }
                     }
                     if(phase == 0 && player.spacingPlacementY > 240-player.height)
@@ -327,9 +325,9 @@ namespace YTPPlusPlusPlus
                         GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         player.dead = true;
                         // timer in 0.05 seconds
-                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 100f;
-                        tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(10)), 0.1f)
-                            .Easing(EasingFunctions.ElasticInOut);
+                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
+                        tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(10)), 0.01f)
+                            .Easing(EasingFunctions.Linear);
                         phase = 1;
                     }
                 }
@@ -341,18 +339,29 @@ namespace YTPPlusPlusPlus
                 switch(phase)
                 {
                     case 1:
-                        tween.TweenTo(this, t => t.offset, new Vector2(0, -GlobalGraphics.Scale(10)), 0.1f)
-                            .Easing(EasingFunctions.ElasticInOut);
+                        if(!hiding && !showing)
+                            tween.TweenTo(this, t => t.offset, new Vector2(0, -GlobalGraphics.Scale(10)), 0.05f)
+                                .Easing(EasingFunctions.Linear);
                         phase = 2;
-                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 100f;
+                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
                         break;
                     case 2:
-                        tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(0)), 0.1f)
-                            .Easing(EasingFunctions.ElasticInOut);
+                        if(!hiding && !showing)
+                            tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(10)), 0.05f)
+                            .Easing(EasingFunctions.Linear);
+                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
+                        phase = 6;
+                        break;
+                    case 6:
+                        if(!hiding && !showing)
+                            tween.TweenTo(this, t => t.offset, new Vector2(0, GlobalGraphics.Scale(0)), 0.05f)
+                            .Easing(EasingFunctions.ExponentialInOut);
+                        timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
                         phase = 0;
                         break;
                     case 3:
-                        tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-320*2), GlobalGraphics.Scale(0)), 0.5f)
+                        if(!hiding && !showing)
+                            tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(-320*2), GlobalGraphics.Scale(0)), 0.5f)
                             .Easing(EasingFunctions.ExponentialInOut);
                         phase = 4;
                         timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 500f;
@@ -361,7 +370,8 @@ namespace YTPPlusPlusPlus
                         player = new AprilFoolsFlappyBirdPlayer();
                         obstacles.Clear();
                         offset = new Vector2(GlobalGraphics.Scale(320*2), GlobalGraphics.Scale(0));
-                        tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(0), GlobalGraphics.Scale(0)), 0.5f)
+                        if(!hiding && !showing)
+                            tween.TweenTo(this, t => t.offset, new Vector2(GlobalGraphics.Scale(0), GlobalGraphics.Scale(0)), 0.5f)
                             .Easing(EasingFunctions.ExponentialInOut);
                         phase = 5;
                         timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 500f;
@@ -381,7 +391,7 @@ namespace YTPPlusPlusPlus
                     obstacle.isDead = true;
                 }
                 phase = 3;
-                timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 100f;
+                timer = (float)gameTime.TotalGameTime.TotalMilliseconds + 50f;
             }
             // Update player
             if(player.Update(gameTime, handleInput))
@@ -402,16 +412,6 @@ namespace YTPPlusPlusPlus
             }
             // Draw player
             player.Draw(gameTime, spriteBatch);
-            if(!hiding && !showing)
-            {
-                // End offset spritebatch
-                spriteBatch.End();
-                // Remake spritebatch
-                spriteBatch.Begin(SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,
-                    null, null, null, null);
-            }
             // Draw points
             SpriteFont font = GlobalContent.GetFont("MunroSmall");
             Vector2 textSize = font.MeasureString(player.points.ToString());
@@ -446,16 +446,13 @@ namespace YTPPlusPlusPlus
                 spriteBatch.DrawString(font, Global.generatorFactory.progressText, new Vector2(GlobalGraphics.Scale(320) - textSize2.X - GlobalGraphics.Scale(8), GlobalGraphics.Scale(9) + textSize.Y), Color.Black);
                 spriteBatch.DrawString(font, Global.generatorFactory.progressText, new Vector2(GlobalGraphics.Scale(320) - textSize2.X - GlobalGraphics.Scale(9), GlobalGraphics.Scale(8) + textSize.Y), Color.White);
             }
-            if(hiding || showing)
-            {
-                // End offset spritebatch
-                spriteBatch.End();
-                // Remake spritebatch
-                spriteBatch.Begin(SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,
-                    null, null, null, null);
-            }
+            // End offset spritebatch
+            spriteBatch.End();
+            // Remake spritebatch
+            spriteBatch.Begin(SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                null, null, null, null);
         }
         public void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {

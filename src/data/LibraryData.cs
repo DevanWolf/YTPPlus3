@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 
 namespace YTPPlusPlusPlus
@@ -205,7 +206,7 @@ namespace YTPPlusPlusPlus
             // Import the library file by copying it.
             if(file.Type == null)
             {
-                ConsoleOutput.WriteLine("Cannot import library file: type is null.");
+                ConsoleOutput.WriteLine("Cannot import library file: type is null.", Color.Red);
                 return null;
             }
             string newpath = Path.Combine(libraryRootPath, libraryPaths[file.Type]);
@@ -214,7 +215,7 @@ namespace YTPPlusPlusPlus
             string newfile = Path.Combine(newpath, file.Nickname + Path.GetExtension(file.Path));
             if(file.Path == null)
             {
-                ConsoleOutput.WriteLine("Cannot import library file: path is null.");
+                ConsoleOutput.WriteLine("Cannot import library file: path is null.", Color.Red);
                 return null;
             }
             // Check to make sure the file isn't already in the library.
@@ -222,7 +223,7 @@ namespace YTPPlusPlusPlus
             {
                 if(libfile.Path == newfile)
                 {
-                    ConsoleOutput.WriteLine("Deleting existing library file");
+                    ConsoleOutput.WriteLine("Deleting existing library file", Color.Yellow);
                     File.Delete(libfile.Path);
                 }
             }
@@ -236,7 +237,7 @@ namespace YTPPlusPlusPlus
             // Delete the library file.
             if(file.Path == null)
             {
-                ConsoleOutput.WriteLine("Cannot delete library file: path is null.");
+                ConsoleOutput.WriteLine("Cannot delete library file: path is null.", Color.Red);
                 return;
             }
             File.Delete(file.Path);
@@ -283,12 +284,12 @@ namespace YTPPlusPlusPlus
             // Move the file to the new type's folder and re-import it.
             if(source.Type == null)
             {
-                ConsoleOutput.WriteLine("Cannot organize library file: type is null.");
+                ConsoleOutput.WriteLine("Cannot organize library file: type is null.", Color.Red);
                 return source;
             }
             if(source.Path == null)
             {
-                ConsoleOutput.WriteLine("Cannot organize library file: path is null.");
+                ConsoleOutput.WriteLine("Cannot organize library file: path is null.", Color.Red);
                 return source;
             }
             string newpath = Path.Combine(libraryRootPath, libraryPaths[newType]);
@@ -301,7 +302,7 @@ namespace YTPPlusPlusPlus
             if(removed)
                 libraryFiles.Add(source);
             else
-                ConsoleOutput.WriteLine("Organized file was not found, so it was not re-added.");
+                ConsoleOutput.WriteLine("Organized file was not found, so it was not re-added.", Color.Yellow);
             return source;
         }
     }

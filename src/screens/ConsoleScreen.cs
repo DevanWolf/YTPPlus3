@@ -72,15 +72,16 @@ namespace YTPPlusPlusPlus
         public bool Update(GameTime gameTime, bool handleInput)
         {
             // When animation is done, set screen type
-            if (screenType == ScreenType.Drawn && hiding && offset.Y == GlobalGraphics.Scale(240))
+            if (hiding && offset.Y == GlobalGraphics.Scale(240))
             {
                 screenType = ScreenType.Hidden;
                 hiding = false;
             }
-            else if (screenType == ScreenType.Hidden && showing)
+            else if (showing)
             {
                 screenType = ScreenType.Drawn;
                 showing = false;
+                hiding = false;
             }
             // Tween
             tween.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -96,8 +97,6 @@ namespace YTPPlusPlusPlus
             newKeyboardState = Keyboard.GetState();
             // (DEBUG) Fill the console with nonsense.
             //ConsoleOutput.WriteLine(Math.Sin(gameTime.TotalGameTime.TotalSeconds).ToString());
-            if(showing)
-                return true;
             return handleInput;
         }
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -119,16 +118,16 @@ namespace YTPPlusPlusPlus
             int lineY = GlobalGraphics.Scale(16) + lineSpacing;
             try
             {
-                foreach (string line in ConsoleOutput.output)
+                foreach (ColoredString line in ConsoleOutput.output)
                 {
-                    Vector2 lineSize = GlobalGraphics.fontMunroSmall.MeasureString(line);
-                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, line, new Vector2(GlobalGraphics.Scale(8), lineY), Color.White);
+                    Vector2 lineSize = GlobalGraphics.fontMunroSmall.MeasureString(line.Text);
+                    spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, line.Text, new Vector2(GlobalGraphics.Scale(8), lineY), line.Color);
                     lineY += lineHeight;
                 }
             }
             catch {}
             // Draw assembly version.
-            string version = "- " + Global.productName + " v" + Global.productVersion + " -";
+            string version = "- " + Global.productName + " v" + Global.productVersion + " - View full output in console.txt -";
             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, version, new Vector2(GlobalGraphics.Scale(8), lineY), Color.White);
             // End offset spritebatch
             spriteBatch.End();

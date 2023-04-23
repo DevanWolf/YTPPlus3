@@ -127,15 +127,16 @@ namespace YTPPlusPlusPlus
         public bool Update(GameTime gameTime, bool handleInput)
         {
             // When animation is done, set screen type
-            if (screenType == ScreenType.Drawn && hiding && offset.Y == GlobalGraphics.Scale(240))
+            if (hiding && offset.Y == GlobalGraphics.Scale(240))
             {
                 screenType = ScreenType.Hidden;
                 hiding = false;
             }
-            else if (screenType == ScreenType.Hidden && showing)
+            else if (showing)
             {
                 screenType = ScreenType.Drawn;
                 showing = false;
+                hiding = false;
             }
             // Tween
             tween.Update((float)gameTime.ElapsedGameTime.TotalSeconds);

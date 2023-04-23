@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 
 namespace YTPPlusPlusPlus
@@ -58,7 +59,7 @@ namespace YTPPlusPlusPlus
             }
             catch(Exception e)
             {
-                ConsoleOutput.WriteLine(e.Message);
+                ConsoleOutput.WriteLine(e.Message, Color.Red);
                 return false;
             }
         }
@@ -68,14 +69,14 @@ namespace YTPPlusPlusPlus
             {
                 if (!File.Exists(_saveFileName))
                 {
-                    ConsoleOutput.WriteLine("Save file not found. Creating new one.");
+                    ConsoleOutput.WriteLine("Save file not found. Creating new one.", Color.Yellow);
                     Save();
                 }
                 string json = File.ReadAllText(_saveFileName);
                 Dictionary<string, string>? loadedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 if (loadedValues == null)
                 {
-                    ConsoleOutput.WriteLine("Save file is corrupted.");
+                    ConsoleOutput.WriteLine("Save file is corrupted.", Color.Red);
                     loadedValues = new Dictionary<string, string>();
                 }
                 // Merge loaded values into save values.
