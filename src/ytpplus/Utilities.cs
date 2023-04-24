@@ -213,10 +213,14 @@ namespace YTPPlusPlusPlus
                 process.Start();
                 process.BeginErrorReadLine();
                 process.WaitForExit();
+                if(process.HasExited && process.ExitCode == 1)
+                {
+                    throw new Exception("Concatenation failed.");
+                }
             }
             catch(Exception ex)
             {
-                ConsoleOutput.WriteLine(ex.Message);
+                ConsoleOutput.WriteLine(ex.Message, Color.Red);
                 ConsoleOutput.WriteLine("Trying a different method of concatenation.", Color.Yellow);
                 Global.generatorFactory.progressText = "Trying a different method of concatenation.";
                 try

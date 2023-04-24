@@ -51,10 +51,12 @@ namespace YTPPlusPlusPlus
                 {
                     StartInfo = startInfo
                 };
+                string output = "";
+                process.OutputDataReceived += (sender, args) => output += args.Data;
                 process.Start();
-                string? output = process.StandardOutput.ReadToEnd();
                 process.WaitForExit();
-                status[i] = !output.Contains("not find");
+                status[i] = output == "" || output.Contains("not find");
+                ConsoleOutput.WriteLine(output);
             }
             ffmpegInstalled = status[0];
             ffprobeInstalled = status[1];

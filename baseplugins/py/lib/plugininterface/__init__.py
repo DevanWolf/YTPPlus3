@@ -90,7 +90,7 @@ class YTPPlusPlusPlus:
         print("<[" + str(r) + "," + str(g) + "," + str(b) + "]>" + message)
     def runCommand(self, command):
         # Run ffmpeg but redirect output to stream
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE)
         # Read output while ffmpeg is running
         while True:
             line = process.stderr.readline()
