@@ -62,7 +62,7 @@ namespace YTPPlusPlusPlus
             // Load plugins.
             if(!bool.Parse(SaveData.saveValues["FirstBoot"]) && SaveData.saveValues["FirstBootVersion"] == Global.productVersion)
             {
-                Global.pluginsLoaded = PluginHandler.LoadPlugins(); // Only load plugins after first boot.
+                //Global.pluginsLoaded = PluginHandler.LoadPlugins(); // Only load plugins after first boot.
             }
             else
             {

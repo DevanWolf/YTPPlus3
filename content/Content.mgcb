@@ -1141,12 +1141,6 @@
 /processorParam:Quality=Best
 /build:music/theme2.mp3
 
-#begin music/theme3.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:music/theme3.mp3
-
 #begin sound/addsource.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor

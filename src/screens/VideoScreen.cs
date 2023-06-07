@@ -133,6 +133,39 @@ namespace YTPPlusPlusPlus
                 SamplerState.PointClamp,
                 null, null, null, null);
         }
+        // shamelessly copied from tutorial screen
+        private BackgroundWorker updateWorker;
+        private void UpdateCheckThread(object? sender, DoWorkEventArgs e)
+        {
+            // Check for updates.
+            UpdateManager.GetDependencyStatus();
+            Global.pluginsLoaded = PluginHandler.LoadPlugins();
+            UpdateManager.CheckForUpdates();
+            if (UpdateManager.updateAvailable)
+            {
+                lines = new()
+                {
+                    Global.productName + " v" + Global.productVersion,
+                    "Welcome to the beta!",
+                    " ",
+                    "A new version is ready.",
+                    "Update to " + UpdateManager.updateTag + " now",
+                    "via the help tab."
+                };
+            }
+            if(UpdateManager.updateAvailable || !Global.pluginsLoaded)
+            {
+                ScreenManager.PushNavigation("Initial Setup");
+                ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Show();
+                ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
+                ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
+                ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
+                GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+            }
+            // Dispose of worker
+            updateWorker.Dispose();
+            updateWorker = null;
+        }
         public void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
             // Video Window
@@ -143,6 +176,9 @@ namespace YTPPlusPlusPlus
                 Show();
             else
                 Hide();
+            updateWorker = new BackgroundWorker();
+            updateWorker.DoWork += UpdateCheckThread;
+            updateWorker.RunWorkerAsync();
         }
     }
 }

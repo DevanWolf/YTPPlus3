@@ -21,7 +21,7 @@ namespace YTPPlusPlusPlus
         /// </summary>
         public string title { get; } = "Initial Setup";
         public int layer { get; } = 6;
-        public ScreenType screenType { get; set; } = ScreenType.Drawn;
+        public ScreenType screenType { get; set; } = ScreenType.Hidden;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = false;
         private bool showing = false;
@@ -127,9 +127,9 @@ namespace YTPPlusPlusPlus
                 " - .NET 6.0 Desktop Runtime (already installed)",
                 " - FFmpeg",
                 " - FFprobe",
-                " - Python 3",
                 "",
                 "The following software is optional, but recommended:",
+                " - Python 3 (for YTP+++ specific plugins)",
                 " - Node.JS (only for legacy YTP+ CLI plugin support)",
                 " - ImageMagick (some plugins may require this)",
                 "",
@@ -144,9 +144,9 @@ namespace YTPPlusPlusPlus
                 "Required software:",
                 " - FFmpeg: %FFMPEG%",
                 " - FFprobe: %FFPROBE%",
-                " - Python: %PYTHON%",
                 "",
                 "Optional software:",
+                " - Python: %PYTHON%",
                 " - Node.JS: %NODEJS%",
                 " - ImageMagick: %IMAGEMAGICK%",
                 "",
@@ -215,94 +215,97 @@ namespace YTPPlusPlusPlus
                     spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, dummyText, new Vector2(GlobalGraphics.Scale(8+16+1+320*i), GlobalGraphics.Scale(60+offsetText+1)), Color.Black);
                     spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, dummyText, new Vector2(GlobalGraphics.Scale(8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.White);
                     // Draw red overlay if prerequisite is not met
-                    if(tutorialText[i][j].Contains("Not installed"))
+                    if(GlobalGraphics.scale == 2)
                     {
-                        int offset = 0;
-                        switch(j)
+                        if(tutorialText[i][j].Contains("Not installed"))
                         {
-                            case 4:
-                                offset = 43;
-                                break;
-                            case 5:
-                                offset = 47;
-                                break;
-                            case 6:
-                                offset = 45;
-                                break;
-                            case 9:
-                                offset = 43;
-                                break;
-                            case 10:
-                                offset = 64;
-                                break;
+                            int offset = 0;
+                            switch(j)
+                            {
+                                case 4:
+                                    offset = 43;
+                                    break;
+                                case 5:
+                                    offset = 47;
+                                    break;
+                                case 8:
+                                    offset = 45;
+                                    break;
+                                case 9:
+                                    offset = 43;
+                                    break;
+                                case 10:
+                                    offset = 64;
+                                    break;
+                            }
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Not installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
                         }
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Not installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
-                    }
-                    // Draw green overlay if prerequisite is met
-                    if(tutorialText[i][j].Contains("Installed"))
-                    {
-                        int offset = 0;
-                        switch(j)
+                        // Draw green overlay if prerequisite is met
+                        if(tutorialText[i][j].Contains("Installed"))
                         {
-                            case 4:
-                                offset = 43;
-                                break;
-                            case 5:
-                                offset = 47;
-                                break;
-                            case 6:
-                                offset = 45;
-                                break;
-                            case 9:
-                                offset = 43;
-                                break;
-                            case 10:
-                                offset = 64;
-                                break;
+                            int offset = 0;
+                            switch(j)
+                            {
+                                case 4:
+                                    offset = 43;
+                                    break;
+                                case 5:
+                                    offset = 47;
+                                    break;
+                                case 8:
+                                    offset = 45;
+                                    break;
+                                case 9:
+                                    offset = 43;
+                                    break;
+                                case 10:
+                                    offset = 64;
+                                    break;
+                            }
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
                         }
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
-                    }
-                    // Draw green overlay if update is available
-                    if(tutorialText[i][j].Contains("Available"))
-                    {
-                        int offset = 68;
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Available", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
-                    }
-                    // Draw blue overlay if up to date
-                    if(tutorialText[i][j].Contains("Up to date"))
-                    {
-                        int offset = 68;
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Up to date", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.SkyBlue);
-                    }
-                    // Draw red overlay if update check failed
-                    if(tutorialText[i][j].Contains("Failed"))
-                    {
-                        int offset = 68;
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Failed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
-                    }
-                    // Draw yellow overlay if checking
-                    if(dummyText.Contains("Checking..."))
-                    {
-                        int offset = 68;
-                        switch(j)
+                        // Draw green overlay if update is available
+                        if(tutorialText[i][j].Contains("Available"))
                         {
-                            case 4:
-                                offset = 43;
-                                break;
-                            case 5:
-                                offset = 47;
-                                break;
-                            case 6:
-                                offset = 45;
-                                break;
-                            case 9:
-                                offset = 43;
-                                break;
-                            case 10:
-                                offset = 64;
-                                break;
+                            int offset = 68;
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Available", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.LimeGreen);
                         }
-                        spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Checking...", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.Yellow);
+                        // Draw blue overlay if up to date
+                        if(tutorialText[i][j].Contains("Up to date"))
+                        {
+                            int offset = 68;
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Up to date", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.SkyBlue);
+                        }
+                        // Draw red overlay if update check failed
+                        if(tutorialText[i][j].Contains("Failed"))
+                        {
+                            int offset = 68;
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Failed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
+                        }
+                        // Draw yellow overlay if checking
+                        if(dummyText.Contains("Checking..."))
+                        {
+                            int offset = 68;
+                            switch(j)
+                            {
+                                case 4:
+                                    offset = 43;
+                                    break;
+                                case 5:
+                                    offset = 47;
+                                    break;
+                                case 8:
+                                    offset = 45;
+                                    break;
+                                case 9:
+                                    offset = 43;
+                                    break;
+                                case 10:
+                                    offset = 64;
+                                    break;
+                            }
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Checking...", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.Yellow);
+                        }
                     }
                     offsetText += GlobalGraphics.Scale(4);
                 }
@@ -418,7 +421,7 @@ namespace YTPPlusPlusPlus
                 switch(i)
                 {
                     case 2: // left click
-                        if(UpdateManager.ffmpegInstalled && UpdateManager.ffprobeInstalled && UpdateManager.pythonInstalled)
+                        if(UpdateManager.ffmpegInstalled && UpdateManager.ffprobeInstalled) //&& UpdateManager.pythonInstalled)
                         {
                             GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             if(!check2)
@@ -496,10 +499,6 @@ namespace YTPPlusPlusPlus
                 return false;
             }));
             controller.LoadContent(contentManager, graphicsDevice);
-            if(!Global.pluginsLoaded)
-                Show();
-            else
-                Hide();
         }
     }
 }

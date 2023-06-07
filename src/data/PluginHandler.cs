@@ -344,9 +344,19 @@ namespace YTPPlusPlusPlus
                     switch (dirName)
                     {
                         case "py":
+                            if (!UpdateManager.pythonInstalled)
+                            {
+                                ConsoleOutput.WriteLine("Python is not installed. Skipping Python plugins.", Color.Red);
+                                break;
+                            }
                             type = PluginType.Python;
                             break;
                         case "js":
+                            if (!UpdateManager.nodeInstalled)
+                            {
+                                ConsoleOutput.WriteLine("Node.JS is not installed. Skipping Node.JS plugins.", Color.Red);
+                                break;
+                            }
                             type = PluginType.NodeJS;
                             break;
                         case "bat":

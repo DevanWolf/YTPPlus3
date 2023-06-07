@@ -16,7 +16,7 @@ namespace YTPPlusPlusPlus
         public static bool justCompletedRender = false;
         public static bool exiting = false;
         public static bool shuffled = false;
-        public static bool pluginsLoaded = false;
+        public static bool pluginsLoaded = true;
         // YTP+ variables.
         public static GeneratorFactory generatorFactory = new GeneratorFactory();
     }
