@@ -178,13 +178,13 @@ namespace YTPPlusPlusPlus
         {
             // Handle mouse input, so that screens don't have to do that.
             // Only change if the window is active and the mouse is over the window.
-            if(UserInterface.instance != null && UserInterface.instance.IsActive)
+            if(UserInterface.instance != null)
             {
                 MouseInput.LastMouseState = MouseInput.MouseState;
                 MouseInput.MouseState = Mouse.GetState();
             }
-            bool handleInput = MouseInput.MouseState.X >= 0 && MouseInput.MouseState.X <= GlobalGraphics.scaledWidth &&
-                MouseInput.MouseState.Y >= 0 && MouseInput.MouseState.Y <= GlobalGraphics.scaledHeight;
+            bool handleInput = UserInterface.instance.IsActive && MouseInput.MouseState.X >= 0 && MouseInput.MouseState.X <= GlobalGraphics.scaledWidth &&
+                MouseInput.MouseState.Y >= 0 && MouseInput.MouseState.Y <= GlobalGraphics.scaledHeight && !Global.dragDrop;
             // Update the drawn screens in layer order and reversed.
             List<IScreen> orderedScreens = drawnScreens.OrderBy(s => s.layer).ToList();
             orderedScreens.Reverse();

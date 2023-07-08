@@ -186,12 +186,12 @@ namespace YTPPlusPlusPlus
             "GMM: UI sound effects, and plugin development",
             "Bobby I Guess: UI music, general help",
             "DevanWolf: Providing support and creating fixes for YTP++",
-            "Supositware: Creating YTP5K, a Twitter bot using YTP+ code",
+            "Supositware: Creating YTPB5000, a Twitter bot using YTP+ code",
             "DeeMacias: Plugin development and general help",
             "0zne: Discord moderation and continued involvement",
             "Spiral: Discord moderation and continued involvement",
             "You: For using YTP+++ and supporting the project!",
-            "Thank you for using YTP+++! This is the end of the credits.",
+            "This is the end of the credits",
         };
         private AprilFoolsFlappyBirdPlayer player = new();
         public void Show()
@@ -306,6 +306,13 @@ namespace YTPPlusPlusPlus
                         GlobalContent.GetSound("AddSource").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         player.points++;
                         currentCredit++;
+                        if(player.points == Global.tennisScore)
+                        {
+                            // unlock tennis mode and play sound
+                            GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            Global.justCompletedRender = true; // not sure if this is a good time to call it, it could be in the middle of a render
+                            Global.tennisMode = true;
+                        }
                         if(currentCredit > creditRoll.Count-1)
                         {
                             currentCredit = 1;

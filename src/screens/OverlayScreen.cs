@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -19,6 +20,7 @@ namespace YTPPlusPlusPlus
         public ScreenType screenType { get; set; } = ScreenType.Drawn;
         public int currentPlacement { get; set; } = -1;
         private float exitOpacity = 0f;
+        public Color bgColor = new Color(128, 128, 128);
         public void Show()
         {
         }
@@ -36,10 +38,10 @@ namespace YTPPlusPlusPlus
             if (Global.exiting)
                 spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, 0, GlobalGraphics.scaledWidth, GlobalGraphics.scaledHeight), new Color(0, 0, 0, exitOpacity));
             // Draw the border.
-            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, 0, GlobalGraphics.scaledWidth, 4 * GlobalGraphics.scale), new Color(128, 128, 128));
-            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, GlobalGraphics.scaledHeight - 4 * GlobalGraphics.scale, GlobalGraphics.scaledWidth, 4 * GlobalGraphics.scale), new Color(128, 128, 128));
-            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, 0, 4 * GlobalGraphics.scale, GlobalGraphics.scaledHeight), new Color(128, 128, 128));
-            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(GlobalGraphics.scaledWidth - 4 * GlobalGraphics.scale, 0, 4 * GlobalGraphics.scale, GlobalGraphics.scaledHeight), new Color(128, 128, 128));
+            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, 0, GlobalGraphics.scaledWidth, 4 * GlobalGraphics.scale), bgColor);
+            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, GlobalGraphics.scaledHeight - 4 * GlobalGraphics.scale, GlobalGraphics.scaledWidth, 4 * GlobalGraphics.scale), bgColor);
+            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(0, 0, 4 * GlobalGraphics.scale, GlobalGraphics.scaledHeight), bgColor);
+            spriteBatch.Draw(GlobalGraphics.pixel, new Rectangle(GlobalGraphics.scaledWidth - 4 * GlobalGraphics.scale, 0, 4 * GlobalGraphics.scale, GlobalGraphics.scaledHeight), bgColor);
         }
         public bool Update(GameTime gameTime, bool handleInput)
         {
@@ -55,6 +57,16 @@ namespace YTPPlusPlusPlus
                         UserInterface.instance.Exit();
                 }
                 return true;
+            }
+            if(Global.dragDrop)
+            {
+                // Math sine the color to flash
+                bgColor = new Color((int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 10) * 64 + 128), (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 10) * 64 + 128), (int)(Math.Sin(gameTime.TotalGameTime.TotalSeconds * 10) * 64 + 128));
+            }
+            else
+            {
+                // Reset the color
+                bgColor = new Color(128, 128, 128);
             }
             return false;
         }

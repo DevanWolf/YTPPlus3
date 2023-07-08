@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Media;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Windows.Forms;
 
 namespace YTPPlusPlusPlus
 {
@@ -27,7 +28,7 @@ namespace YTPPlusPlusPlus
         public static UserInterface? instance;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch? _spriteBatch;
-        private WindowState _windowState = WindowState.Focused;
+        private WindowState _windowState = WindowState.Unfocused;
         private MusicState _musicState = MusicState.Stopped;
         private int _musicActive = 0;
         public UserInterface()
@@ -37,8 +38,30 @@ namespace YTPPlusPlusPlus
             IsMouseVisible = true;
             instance = this;
         }
+        // Drag and drop support.
+        private void DragEnter(object sender, DragEventArgs e)
+        {
+            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+            Global.dragDrop = true;
+        }
+        private void DragDrop(object sender, DragEventArgs e)
+        {
+            Global.dragDropFiles = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToList();
+            Global.dragDrop = false;
+        }
+        private void DragLeave(object sender, EventArgs e)
+        {
+            Global.dragDrop = false;
+        }
         protected override void Initialize()
         {
+            // File drag and drop support.
+            Form gameForm = (Form)Form.FromHandle(Window.Handle);
+            gameForm.AllowDrop = true;
+            gameForm.DragEnter += new DragEventHandler(DragEnter);
+            gameForm.DragDrop += new DragEventHandler(DragDrop);
+            gameForm.DragLeave += new EventHandler(DragLeave);
             // Set window title.
             Window.Title = Global.productName;
             // Disable anti-aliasing.

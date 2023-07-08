@@ -35,39 +35,56 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public static class ConsoleOutput
     {
-        public static readonly List<ColoredString> output = new List<ColoredString>();
-        private static readonly int maxLines = 25;
+        public static List<ColoredString> output = new List<ColoredString>();
+        public static List<ColoredString> proxyOutput = new List<ColoredString>();
+        public static List<ColoredString> scrolledOutput = new List<ColoredString>();
+        public static readonly int maxLines = 25;
         private static readonly int lineLength = 70;
+        public static int scrollAmount = -1;
         
+        public static List<ColoredString> GetOutput()
+        {
+            return scrollAmount > -1 ? scrolledOutput : output;
+        }
         private static void WriteLineInternal(string line, bool newLine = true, Color? color = null)
         {
             Color c = Color.White;
             if (color != null)
                 c = (Color)color;
             // Wrap lines.
-            int lineCount = line.Length / lineLength;
-            if (line.Length % lineLength > 0)
-                lineCount++;
-            for (int i = 0; i < lineCount; i++)
+            if(color != Color.Transparent)
             {
-                int start = i * lineLength;
-                int end = (i + 1) * lineLength;
-                if (end > line.Length)
-                    end = line.Length;
-                if (newLine)
-                    output.Add(new ColoredString(line.Substring(start, end - start), color));
-                else
+                int lineCount = line.Length / lineLength;
+                if (line.Length % lineLength > 0)
+                    lineCount++;
+                for (int i = 0; i < lineCount; i++)
                 {
-                    if (output.Count > 0)
-                        output[output.Count - 1].Text += line.Substring(start, end - start);
-                    else
+                    int start = i * lineLength;
+                    int end = (i + 1) * lineLength;
+                    if (end > line.Length)
+                        end = line.Length;
+                    if (newLine)
+                    {
                         output.Add(new ColoredString(line.Substring(start, end - start), color));
+                        proxyOutput.Add(new ColoredString(line.Substring(start, end - start), color));
+                    }
+                    else
+                    {
+                        if (output.Count > 0)
+                            output[output.Count - 1].Text += line.Substring(start, end - start);
+                        else
+                            output.Add(new ColoredString(line.Substring(start, end - start), color));
+                        if(proxyOutput.Count > 0)
+                            proxyOutput[proxyOutput.Count - 1].Text += line.Substring(start, end - start);
+                        else
+                            proxyOutput.Add(new ColoredString(line.Substring(start, end - start), color));
+                    }
                 }
+                // Remove old lines.
+                while (output.Count > maxLines)
+                    output.RemoveAt(0);
             }
-            // Remove old lines.
-            while (output.Count > maxLines)
-                output.RemoveAt(0);
-            // DEBUG: Write to file.
+            // Write to file.
             try
             {
                 using (StreamWriter writer = new StreamWriter("console.txt", true))
@@ -94,7 +111,7 @@ namespace YTPPlusPlusPlus
                 c = (Color)color;
             else
             {
-                // Look for color identifiers (python).
+                // Look for color identifiers (plugins).
                 // <[255,255,255]>This is one line.
                 if(line.StartsWith("<["))
                 {
@@ -117,6 +134,32 @@ namespace YTPPlusPlusPlus
             string[] lines = line.Replace("\r", "").Split('\n');
             foreach (string l in lines)
                 WriteLineInternal(l, true, c);
+        }
+        public static void Scroll(int deltaY)
+        {
+            if(scrollAmount <= -1)
+                scrollAmount = proxyOutput.Count - maxLines;
+            int normalizedDeltaY = (deltaY / 120) * -1;
+            scrollAmount += normalizedDeltaY;
+            if (scrollAmount < 0)
+                scrollAmount = 0;
+            else if (scrollAmount > proxyOutput.Count - maxLines)
+                scrollAmount = proxyOutput.Count - maxLines;
+            if (scrollAmount == proxyOutput.Count - maxLines)
+                scrollAmount = -1;
+            if(scrollAmount > -1)
+            {
+                // proxyOutput contains all output
+                // maxLines applies
+                scrolledOutput.Clear();
+                for(int i = scrollAmount; i < scrollAmount + maxLines; i++)
+                {
+                    if(i < proxyOutput.Count)
+                    {
+                        scrolledOutput.Add(proxyOutput[i]);
+                    }
+                }
+            }
         }
         public static void Clear()
         {

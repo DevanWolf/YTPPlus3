@@ -60,6 +60,14 @@ namespace YTPPlusPlusPlus
         /// </summary>
         Overlay,
         /// <summary>
+        /// Images.
+        /// </summary>
+        Image,
+        /// <summary>
+        /// Tennis entries.
+        /// </summary>
+        Tennis,
+        /// <summary>
         /// Custom library type.
         /// </summary>
         Custom,
@@ -70,6 +78,7 @@ namespace YTPPlusPlusPlus
         public LibraryFileType FileType { get; set; }
         public bool Special { get; set; } = false;
         public string CustomName { get; set; } = "";
+        public string Description { get; set; } = "";
         public LibraryType(LibraryRootType rootType, LibraryFileType fileType, bool special = false)
         {
             RootType = rootType;
@@ -83,20 +92,36 @@ namespace YTPPlusPlusPlus
             Special = false;
             CustomName = customName;
         }
+        public LibraryType(LibraryRootType rootType, LibraryFileType fileType, string description)
+        {
+            RootType = rootType;
+            FileType = fileType;
+            Description = description;
+        }
+        public LibraryType(LibraryRootType rootType, string customName, string description)
+        {
+            RootType = rootType;
+            FileType = LibraryFileType.Custom;
+            Special = false;
+            CustomName = customName;
+            Description = description;
+        }
     }
     public static class DefaultLibraryTypes
     {
         public static LibraryType All { get; } = new LibraryType(LibraryRootType.All, LibraryFileType.All, true);
         public static LibraryType Video { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.All, true);
         public static LibraryType Audio { get; } = new LibraryType(LibraryRootType.Audio, LibraryFileType.All, true);
-        public static LibraryType SFX { get; } = new LibraryType(LibraryRootType.Audio, LibraryFileType.SFX);
-        public static LibraryType Music { get; } = new LibraryType(LibraryRootType.Audio, LibraryFileType.Music);
-        public static LibraryType Render { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Render);
-        public static LibraryType Material { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Material);
-        public static LibraryType Transition { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Transition);
-        public static LibraryType Intro { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Intro);
-        public static LibraryType Outro { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Outro);
-        public static LibraryType Overlay { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Overlay);
+        public static LibraryType SFX { get; } = new LibraryType(LibraryRootType.Audio, LibraryFileType.SFX, "Random sound effects.");
+        public static LibraryType Music { get; } = new LibraryType(LibraryRootType.Audio, LibraryFileType.Music, "Random dance music. Also used for images.");
+        public static LibraryType Render { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Render, "Generated videos.");
+        public static LibraryType Material { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Material, "Root video to be used in a render.");
+        public static LibraryType Transition { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Transition, "Played in full at random points.");
+        public static LibraryType Intro { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Intro, "Played at the start of the video.");
+        public static LibraryType Outro { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Outro, "Played at the end of the video.");
+        public static LibraryType Overlay { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Overlay, "Requires pure green chroma key.");
+        public static LibraryType Image { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Image, "Zooms in (non-gif only) while playing music.");
+        public static LibraryType Tennis { get; } = new LibraryType(LibraryRootType.Video, LibraryFileType.Tennis, "YTP+ Tennis entries.");
         public static List<LibraryType> AllTypes { get; } = new List<LibraryType>()
         {
             All,
@@ -110,6 +135,8 @@ namespace YTPPlusPlusPlus
             Intro,
             Outro,
             Overlay,
+            Image,
+            Tennis,
         };
     }
     public class LibraryFile
@@ -143,20 +170,24 @@ namespace YTPPlusPlusPlus
             { DefaultLibraryTypes.Intro, @"video\intros" },
             { DefaultLibraryTypes.Outro, @"video\outros" },
             { DefaultLibraryTypes.Overlay, @"video\overlays" },
+            { DefaultLibraryTypes.Image, @"video\images" },
+            { DefaultLibraryTypes.Tennis, @"video\tennis" },
         };
         public static Dictionary<LibraryType, string[]> libraryFileTypes { get; } = new Dictionary<LibraryType, string[]>()
         {
-            { DefaultLibraryTypes.All, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv", ".wav", ".mp3", ".ogg", ".m4a" } },
+            { DefaultLibraryTypes.All, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv", ".wav", ".mp3", ".ogg", ".m4a", ".flac" } },
             { DefaultLibraryTypes.Video, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
-            { DefaultLibraryTypes.Audio, new string[] { ".wav", ".mp3", ".ogg", ".m4a" } },
-            { DefaultLibraryTypes.SFX, new string[] { ".wav", ".mp3", ".ogg", ".m4a" } },
-            { DefaultLibraryTypes.Music, new string[] { ".wav", ".mp3", ".ogg", ".m4a" } },
+            { DefaultLibraryTypes.Audio, new string[] { ".wav", ".mp3", ".ogg", ".m4a", ".flac" } },
+            { DefaultLibraryTypes.SFX, new string[] { ".wav", ".mp3", ".ogg", ".m4a", ".flac" } },
+            { DefaultLibraryTypes.Music, new string[] { ".wav", ".mp3", ".ogg", ".m4a", ".flac" } },
+            { DefaultLibraryTypes.Render, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
             { DefaultLibraryTypes.Material, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
             { DefaultLibraryTypes.Transition, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
             { DefaultLibraryTypes.Intro, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
             { DefaultLibraryTypes.Outro, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
             { DefaultLibraryTypes.Overlay, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
-            { DefaultLibraryTypes.Render, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
+            { DefaultLibraryTypes.Image, new string[] { ".png", ".jpg", ".jpeg", ".gif" } },
+            { DefaultLibraryTypes.Tennis, new string[] { ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv" } },
         };
         public static Dictionary<LibraryType, string> libraryNames { get; } = new Dictionary<LibraryType, string>()
         {
@@ -171,6 +202,8 @@ namespace YTPPlusPlusPlus
             { DefaultLibraryTypes.Intro, "Intros" },
             { DefaultLibraryTypes.Outro, "Outros" },
             { DefaultLibraryTypes.Overlay, "Overlays" },
+            { DefaultLibraryTypes.Image, "Images" },
+            { DefaultLibraryTypes.Tennis, "Tennis" },
         };
         private static void LoadRecursive(string path, LibraryType type)
         {
@@ -180,7 +213,11 @@ namespace YTPPlusPlusPlus
                 {
                     if (file.EndsWith(filetype))
                     {
-                        libraryFiles.Add(new LibraryFile(Path.GetFileNameWithoutExtension(file), file, type));
+                        LibraryFile libFile = new LibraryFile(Path.GetFileNameWithoutExtension(file), file, type);
+                        // If path ends in .disabled.*, set enabled to false.
+                        if (libFile.Path.EndsWith(".disabled" + filetype))
+                            libFile.Enabled = false;
+                        libraryFiles.Add(libFile);
                         break;
                     }
                 }
@@ -190,15 +227,22 @@ namespace YTPPlusPlusPlus
         }
         public static void Load()
         {
-            libraryFiles.Clear();
-            foreach (LibraryType type in libraryPaths.Keys)
+            try
             {
-                if(type.Special)
-                    continue; // Skip special types for now.
-                string path = Path.Combine(libraryRootPath, libraryPaths[type]);
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-                LoadRecursive(path, type);
+                libraryFiles.Clear();
+                foreach (LibraryType type in libraryPaths.Keys)
+                {
+                    if(type.Special)
+                        continue; // Skip special types for now.
+                    string path = Path.Combine(libraryRootPath, libraryPaths[type]);
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+                    LoadRecursive(path, type);
+                }
+            }
+            catch (Exception e)
+            {
+                ConsoleOutput.WriteLine("Error loading library files: " + e.Message, Color.Red);
             }
         }
         public static LibraryFile? Load(LibraryFile file)
@@ -227,7 +271,15 @@ namespace YTPPlusPlusPlus
                     File.Delete(libfile.Path);
                 }
             }
-            File.Copy(file.Path, newfile);
+            try
+            {
+                File.Copy(file.Path, newfile);
+            }
+            catch (Exception e)
+            {
+                ConsoleOutput.WriteLine("Failed to copy library file: " + e.Message, Color.Red);
+                return null;
+            }
             file.Path = newfile;
             libraryFiles.Add(file);
             return file;
@@ -240,8 +292,68 @@ namespace YTPPlusPlusPlus
                 ConsoleOutput.WriteLine("Cannot delete library file: path is null.", Color.Red);
                 return;
             }
-            File.Delete(file.Path);
-            libraryFiles.Remove(file);
+            try
+            {
+                File.Delete(file.Path);
+                libraryFiles.Remove(file);
+            }
+            catch (Exception e)
+            {
+                ConsoleOutput.WriteLine("Failed to delete library file: " + e.Message, Color.Red);
+            }
+        }
+        public static void SetEnabled(LibraryFile file, bool enabled)
+        {
+            // Set whether or not the file is enabled in libraryFiles
+            for(int i = 0; i < libraryFiles.Count; i++)
+            {
+                if(libraryFiles[i] == file)
+                {
+                    // Rename the file to .disabled.* if it's being disabled.
+                    if(enabled)
+                    {
+                        if(file.Path == null)
+                        {
+                            ConsoleOutput.WriteLine("Cannot enable library file: path is null.", Color.Red);
+                            return;
+                        }
+                        string ext = Path.GetExtension(file.Path);
+                        string newpath = file.Path.Substring(0, file.Path.Length - ext.Length - 9) + ext;
+                        try
+                        {
+                            File.Move(file.Path, newpath);
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleOutput.WriteLine("Failed to enable library file: " + e.Message, Color.Red);
+                            return;
+                        }
+                        file.Path = newpath;
+                    }
+                    else
+                    {
+                        if(file.Path == null)
+                        {
+                            ConsoleOutput.WriteLine("Cannot disable library file: path is null.", Color.Red);
+                            return;
+                        }
+                        string newpath = Path.Combine(Path.GetDirectoryName(file.Path), Path.GetFileNameWithoutExtension(file.Path) + ".disabled" + Path.GetExtension(file.Path));
+                        try
+                        {
+                            File.Move(file.Path, newpath);
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleOutput.WriteLine("Failed to disable library file: " + e.Message, Color.Red);
+                            return;
+                        }
+                        file.Path = newpath;
+                    }
+                    libraryFiles[i] = file;
+                    libraryFiles[i].Enabled = enabled;
+                    return;
+                }
+            }
         }
         public static string PickRandom(LibraryType type, Random rnd)
         {
@@ -294,7 +406,25 @@ namespace YTPPlusPlusPlus
             }
             string newpath = Path.Combine(libraryRootPath, libraryPaths[newType]);
             string finalpath = Path.Combine(newpath, Path.GetFileName(source.Path));
-            File.Move(source.Path, finalpath);
+            try
+            {
+                File.Move(source.Path, finalpath);
+            }
+            catch
+            {
+                // It probably already exists, so try to delete it.
+                try
+                {
+                    libraryFiles.Remove(source);
+                    File.Delete(finalpath);
+                    File.Move(source.Path, finalpath);
+                }
+                catch (Exception e)
+                {
+                    ConsoleOutput.WriteLine("Failed to move library file: " + e.Message, Color.Red);
+                    return source;
+                }
+            }
             // File is now in the new folder, so we can re-import it.
             bool removed = libraryFiles.Remove(source);
             source.Path = finalpath;

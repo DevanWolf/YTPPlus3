@@ -43,18 +43,20 @@ namespace YTPPlusPlusPlus
             {"ActiveMusic", "1"},
             {"ShuffleMusic", "true"},
             {"TransitionChance", "20"},
+            {"ImageChance", "20"},
             {"OverlayChance", "20"},
             {"EffectChance", "60"},
             {"FirstBoot", "true"},
-            {"FirstBootVersion", Global.productVersion}
+            {"FirstBootVersion", Global.productVersion},
+            {"TennisMode", "false"}
         };
-        private static string _saveFileName = "Options.json";
+        public static string saveFileName = "Options.json";
         public static bool Save()
         {
             try
             {
                 string json = JsonConvert.SerializeObject(saveValues, Formatting.Indented);
-                File.WriteAllText(_saveFileName, json);
+                File.WriteAllText(saveFileName, json);
                 return true;
             }
             catch(Exception e)
@@ -67,12 +69,12 @@ namespace YTPPlusPlusPlus
         {
             try
             {
-                if (!File.Exists(_saveFileName))
+                if (!File.Exists(saveFileName))
                 {
                     ConsoleOutput.WriteLine("Save file not found. Creating new one.", Color.Yellow);
                     Save();
                 }
-                string json = File.ReadAllText(_saveFileName);
+                string json = File.ReadAllText(saveFileName);
                 Dictionary<string, string>? loadedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 if (loadedValues == null)
                 {

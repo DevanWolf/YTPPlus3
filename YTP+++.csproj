@@ -3,9 +3,9 @@
     <AssemblyName>YTP+++</AssemblyName>
     <AssemblyProduct>YTP+++</AssemblyProduct>
     <AssemblyTitle>Nonsensical video generator</AssemblyTitle>
-    <FileVersion>3.0.10</FileVersion>
-    <AssemblyVersion>3.0.10</AssemblyVersion>
-    <Version>3.0.10</Version>
+    <FileVersion>3.1.0</FileVersion>
+    <AssemblyVersion>3.1.0</AssemblyVersion>
+    <Version>3.1.0</Version>
     <AssemblyCopyright>Copyright © KiwifruitDev 2023</AssemblyCopyright>
     <AssemblyTrademark>YTP+++ licensed under the MIT License; Newtonsoft.Json licensed under MIT; MonoGame licensed under Ms-PL; Munro licensed under SIL OFL</AssemblyTrademark>
     <Authors>KiwifruitDev, hazelcode</Authors>
@@ -46,13 +46,14 @@
 	<Target Name="CopyPlugins" AfterTargets="Build">
 		<MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\plugins" />
 		<MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\plugins\bat" />
-    <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\plugins\py" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\plugins\js" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\plugins\shared" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\audio" />
+    <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\audio\distort" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\audio\music" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\audio\sfx" />
+    <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\audio\spartaremix" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\video" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\video\intros" />
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\video\materials" />
@@ -63,13 +64,14 @@
     <MakeDir Directories="$(ProjectDir)bin\Release\net6.0-windows\library\resources" />
 		<MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\plugins" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\plugins\bat" />
-    <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\plugins\py" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\plugins\js" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\plugins\shared" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\audio" />
+    <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\audio\distort" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\audio\music" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\audio\sfx" />
+    <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\audio\spartaremix" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\video" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\video\intros" />
     <MakeDir Directories="$(ProjectDir)bin\Debug\net6.0-windows\library\video\materials" />

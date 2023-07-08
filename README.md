@@ -98,11 +98,6 @@ These software packages are required to run YTP+++. They are not included in the
   - Download the .NET Desktop Runtime from [here](https://dotnet.microsoft.com/download/dotnet/6.0/runtime).
     - Please ensure that you download the **Run Desktop Apps** x64 version.
   - Install the .NET Desktop Runtime.
-- Python 3
-  - Download the latest Python 3 release from [here](https://www.python.org/downloads/).
-  - Install Python 3 and ensure that the option to add Python to your PATH environment variable is selected.
-    - If Python is already installed or it was not added to your PATH environment variable, you will need to add it manually.
-    - See [Adding an Environment Variable](#adding-an-environment-variable) for instructions.
 
 ### Optional
 
@@ -189,7 +184,6 @@ Please open an issue or pull request if you have any suggestions or bug reports.
 - [MonoGame](https://www.monogame.net/)
 - [FFmpeg](https://ffmpeg.org/)
 - [Newtonsoft.Json](https://www.newtonsoft.com/json)
-- [Python](https://www.python.org/)
 - [Munro](https://www.tenbytwenty.com/#munro)
 
 ## License

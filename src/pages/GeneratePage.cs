@@ -13,11 +13,17 @@ namespace YTPPlusPlusPlus
         public string Tooltip { get; } = "Render a nonsensical video.";
         private readonly InteractableController controller = new();
         private readonly InteractableController controllerAdvanced = new();
+        private readonly InteractableController controllerTennis = new();
         private readonly InteractableController controllerRendering = new();
         private bool advanced = false;
         public bool Update(GameTime gameTime, bool handleInput)
         {
-            if(advanced)
+            if(Global.tennisMode)
+            {
+                if(controllerTennis.Update(gameTime, handleInput))
+                    return true;
+            }
+            else if(advanced)
             {
                 if(controllerAdvanced.Update(gameTime, handleInput))
                     return true;
@@ -37,14 +43,21 @@ namespace YTPPlusPlusPlus
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             // Interactable
-            if(advanced)
+            if(advanced || Global.tennisMode)
             {
                 spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle(GlobalGraphics.Scale(137), GlobalGraphics.Scale(56), GlobalGraphics.Scale(167-1), GlobalGraphics.Scale(180)), new Color(0, 0, 0, 96));
                 spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle(GlobalGraphics.Scale(136), GlobalGraphics.Scale(57), GlobalGraphics.Scale(1), GlobalGraphics.Scale(179)), new Color(0, 0, 0, 96));
                 spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle(GlobalGraphics.Scale(304-1), GlobalGraphics.Scale(57), GlobalGraphics.Scale(1), GlobalGraphics.Scale(179)), new Color(0, 0, 0, 96));
                 spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle(GlobalGraphics.Scale(135), GlobalGraphics.Scale(58), GlobalGraphics.Scale(1), GlobalGraphics.Scale(178)), new Color(0, 0, 0, 96));
                 spriteBatch.Draw(GlobalContent.GetTexture("Pixel"), new Rectangle(GlobalGraphics.Scale(305-1), GlobalGraphics.Scale(58), GlobalGraphics.Scale(1), GlobalGraphics.Scale(178)), new Color(0, 0, 0, 96));
-                controllerAdvanced.Draw(gameTime, spriteBatch);
+                if(Global.tennisMode)
+                {
+                    controllerTennis.Draw(gameTime, spriteBatch);
+                }
+                else
+                {
+                    controllerAdvanced.Draw(gameTime, spriteBatch);
+                }
             }
             else if(Global.generatorFactory.generatorActive)
             {
@@ -79,7 +92,38 @@ namespace YTPPlusPlusPlus
                 }
                 return false;
             }));
+            // TENNIS MODE
+            controllerTennis.Add("TennisLabel", new Label("Tennis Options", new Vector2(144, 64+19*8)));
+            controllerTennis.Add("TennisEnabled", new Switch("Use Tennis Mode", "Send generations back & forth!", new Vector2(139, 60), (int i) => {
+                bool switchState = (i & 256) != 0;
+                if((i & 2) != 0)
+                {
+                    string oldValue = SaveData.saveValues["TennisMode"];
+                    SaveData.saveValues["TennisMode"] = switchState.ToString().ToLower();
+                    if(oldValue != SaveData.saveValues["TennisMode"])
+                        SaveData.Save();
+                }
+                return switchState;
+            }, SaveData.saveValues["TennisMode"] == "true"));
+            controllerTennis.Add("TennisBackToRegularOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {
+                switch(i)
+                {
+                    case 2: // left click
+                        advanced = false;
+                        Global.tennisMode = false;
+                        GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        return true;
+                }
+                return false;
+            }));
             // ADVANCED MODE
+            controllerAdvanced.Add("ImageChance", new Dial("Image Chance", "How often image types are rolled.", new Vector2(139, 60+19*6), int.Parse(SaveData.saveValues["ImageChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["ImageChance"]);
+                SaveData.saveValues["ImageChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["ImageChance"]))
+                    SaveData.Save();
+                return false;
+            }));
             controllerAdvanced.Add("OverlayChance", new Dial("Overlay Chance", "How often overlays are rolled.", new Vector2(139, 60+19*5), int.Parse(SaveData.saveValues["OverlayChance"]), 0, 100, (int i) => {
                 int oldValue = int.Parse(SaveData.saveValues["OverlayChance"]);
                 SaveData.saveValues["OverlayChance"] = i.ToString();
@@ -127,19 +171,27 @@ namespace YTPPlusPlusPlus
                 return switchState;
             }, SaveData.saveValues["OverlaysEnabled"] == "true"));
             controllerAdvanced.Add("AdvancedLabel", new Label("Advanced Options", new Vector2(144, 64+19*8)));
-            controllerAdvanced.Add("BackToRegularOptions", new Button("Return", "Go back to regular options.", new Vector2(245+36, 60+10+19*8), (int i) => {
+            controllerAdvanced.Add("BackToRegularOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {
                 switch(i)
                 {
                     case 2: // left click
                         advanced = false;
-                        GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        if(int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) >= Global.tennisScore)
+                        {
+                            Global.tennisMode = true;
+                            GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
                         return true;
                 }
                 return false;
             }));
             // REGULAR MODE
             // Add buttons
-            controller.Add("MoreOptions", new Button("Advanced", "More options here.", new Vector2(239+36, 60+10+19*8), (int i) => {
+            controller.Add("MoreOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {
                 switch(i)
                 {
                     case 2: // left click
@@ -166,7 +218,7 @@ namespace YTPPlusPlusPlus
                 return false;
             }));
             // Add text entries
-            controller.Add("ProjectTitle", new TextEntry("Random Seed", "The project name and generation seed.", SaveData.saveValues["ProjectTitle"], new Vector2(139, 60+19*7), 101, 20, 5, (int i) => {
+            controller.Add("ProjectTitle", new TextEntry("Project Name", "The name of the output video file.", SaveData.saveValues["ProjectTitle"], new Vector2(139, 60+19*7), 101, 20, 5, (int i) => {
                 string oldValue = SaveData.saveValues["ProjectTitle"];
                 SaveData.saveValues["ProjectTitle"] = controller.interactables["ProjectTitle"].Tooltip;
                 if(oldValue != SaveData.saveValues["ProjectTitle"])
@@ -228,7 +280,7 @@ namespace YTPPlusPlusPlus
                 }
                 return switchState;
             }, SaveData.saveValues["IntrosEnabled"] == "true"));
-            controller.Add("SaveToLibrary", new Switch("Save to Library", "Automatically save to library.", new Vector2(139, 60), (int i) => {
+            controller.Add("SaveToLibrary", new Switch("Play Immediately", "Automatically start playing once complete.", new Vector2(139, 60), (int i) => {
                 bool switchState = (i & 256) != 0;
                 if((i & 2) != 0)
                 {

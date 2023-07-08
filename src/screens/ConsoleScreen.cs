@@ -93,6 +93,11 @@ namespace YTPPlusPlusPlus
                 else
                     GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
             }
+            // Scrolling will set ConsoleOutput.paused to true.
+            if (MouseInput.MouseState.ScrollWheelValue != MouseInput.LastMouseState.ScrollWheelValue)
+            {
+                ConsoleOutput.Scroll(MouseInput.MouseState.ScrollWheelValue - MouseInput.LastMouseState.ScrollWheelValue);
+            }
             oldKeyboardState = newKeyboardState;
             newKeyboardState = Keyboard.GetState();
             // (DEBUG) Fill the console with nonsense.
@@ -118,7 +123,7 @@ namespace YTPPlusPlusPlus
             int lineY = GlobalGraphics.Scale(16) + lineSpacing;
             try
             {
-                foreach (ColoredString line in ConsoleOutput.output)
+                foreach (ColoredString line in ConsoleOutput.GetOutput())
                 {
                     Vector2 lineSize = GlobalGraphics.fontMunroSmall.MeasureString(line.Text);
                     spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, line.Text, new Vector2(GlobalGraphics.Scale(8), lineY), line.Color);
@@ -127,7 +132,7 @@ namespace YTPPlusPlusPlus
             }
             catch {}
             // Draw assembly version.
-            string version = "- " + Global.productName + " v" + Global.productVersion + " - View full output in console.txt -";
+            string version = "- " + Global.productName + " v" + Global.productVersion + " - View full output in console.txt -" + (ConsoleOutput.proxyOutput.Count > ConsoleOutput.maxLines ? (" Line " + (ConsoleOutput.scrollAmount > -1 ? (ConsoleOutput.scrollAmount + 1).ToString() : (ConsoleOutput.proxyOutput.Count - ConsoleOutput.maxLines + 1).ToString()) + "/" + ConsoleOutput.proxyOutput.Count.ToString() + " -") : "");
             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, version, new Vector2(GlobalGraphics.Scale(8), lineY), Color.White);
             // End offset spritebatch
             spriteBatch.End();

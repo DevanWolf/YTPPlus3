@@ -124,12 +124,10 @@ namespace YTPPlusPlusPlus
                 "On the next page, we will check prerequisites.",
                 "",
                 "The following software is required to run YTP+++:",
-                " - .NET 6.0 Desktop Runtime (already installed)",
                 " - FFmpeg",
                 " - FFprobe",
                 "",
                 "The following software is optional, but recommended:",
-                " - Python 3 (for YTP+++ specific plugins)",
                 " - Node.JS (only for legacy YTP+ CLI plugin support)",
                 " - ImageMagick (some plugins may require this)",
                 "",
@@ -146,7 +144,6 @@ namespace YTPPlusPlusPlus
                 " - FFprobe: %FFPROBE%",
                 "",
                 "Optional software:",
-                " - Python: %PYTHON%",
                 " - Node.JS: %NODEJS%",
                 " - ImageMagick: %IMAGEMAGICK%",
                 "",
@@ -207,7 +204,6 @@ namespace YTPPlusPlusPlus
                     string dummyText = tutorialText[i][j];
                     dummyText = dummyText.Replace("%FFMPEG%", "Checking...");
                     dummyText = dummyText.Replace("%FFPROBE%", "Checking...");
-                    dummyText = dummyText.Replace("%PYTHON%", "Checking...");
                     dummyText = dummyText.Replace("%NODEJS%", "Checking...");
                     dummyText = dummyText.Replace("%IMAGEMAGICK%", "Checking...");
                     dummyText = dummyText.Replace("%UPDATECHECK%", "Checking...");
@@ -229,12 +225,9 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 45;
-                                    break;
-                                case 9:
                                     offset = 43;
                                     break;
-                                case 10:
+                                case 9:
                                     offset = 64;
                                     break;
                             }
@@ -253,12 +246,9 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 45;
-                                    break;
-                                case 9:
                                     offset = 43;
                                     break;
-                                case 10:
+                                case 9:
                                     offset = 64;
                                     break;
                             }
@@ -295,12 +285,9 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 45;
-                                    break;
-                                case 9:
                                     offset = 43;
                                     break;
-                                case 10:
+                                case 9:
                                     offset = 64;
                                     break;
                             }
@@ -334,7 +321,6 @@ namespace YTPPlusPlusPlus
                 {
                     tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
                     tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
-                    tutorialText[h][j] = tutorialText[h][j].Replace("%PYTHON%", UpdateManager.pythonInstalled ? "Installed" : "Not installed");
                     tutorialText[h][j] = tutorialText[h][j].Replace("%NODEJS%", UpdateManager.nodeInstalled ? "Installed" : "Not installed");
                     tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
                 }
@@ -421,7 +407,7 @@ namespace YTPPlusPlusPlus
                 switch(i)
                 {
                     case 2: // left click
-                        if(UpdateManager.ffmpegInstalled && UpdateManager.ffprobeInstalled) //&& UpdateManager.pythonInstalled)
+                        if(UpdateManager.ffmpegInstalled && UpdateManager.ffprobeInstalled)
                         {
                             GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             if(!check2)

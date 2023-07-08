@@ -39,7 +39,7 @@ function Install-YTPPlusPlusPlus {
     # If run as administrator, continue.
     if ($administrator.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
         # Display warning.
-        Write-Host "This script will install Chocolatey, .NET 6.0 Desktop Runtime, Python 3, Node.JS, ImageMagick, and FFmpeg.
+        Write-Host "This script will install Chocolatey, .NET 6.0 Desktop Runtime, ImageMagick, and FFmpeg.
 Afterwards, it will download and extract YTP+++ to C:\YTPPlusPlusPlus.
 It will also create a shortcut on your desktop and in your Start Menu.
 " -ForegroundColor Yellow -BackgroundColor Black
@@ -56,9 +56,9 @@ It will also create a shortcut on your desktop and in your Start Menu.
             Write-Host "Refreshing PATH..." -ForegroundColor Yellow
             refreshenv
 
-            # Install .NET 6.0 Desktop Runtime, Python 3, and Node.JS with Chocolatey.
-            Write-Host "Installing .NET 6.0 Desktop Runtime, Python 3, Node.JS, ImageMagick, and FFmpeg..." -ForegroundColor Yellow
-            choco install dotnet-6.0-desktopruntime python3 nodejs imagemagick ffmpeg -y
+            # Install .NET 6.0 Desktop Runtime with Chocolatey.
+            Write-Host "Installing .NET 6.0 Desktop Runtime, ImageMagick, and FFmpeg..." -ForegroundColor Yellow
+            choco install dotnet-6.0-desktopruntime imagemagick ffmpeg -y
 
             # Refresh PATH.
             Write-Host "Refreshing PATH..." -ForegroundColor Yellow

@@ -12,9 +12,19 @@ namespace YTPPlusPlusPlus
     public enum PluginType
     {
         None,
-        Python,
-        NodeJS,
-        Batch
+        NodeJS, // Optional, requires user to install NodeJS
+        Batch,
+        PowerShell,
+    }
+    public class PluginReturnValue
+    {
+        public bool success;
+        public string pluginName;
+        public PluginReturnValue(bool success = true, string pluginName = "")
+        {
+            this.success = success;
+            this.pluginName = pluginName;
+        }
     }
     public class Plugin
     {
@@ -27,11 +37,11 @@ namespace YTPPlusPlusPlus
             this.type = type;
             this.enabled = enabled;
         }
-        public bool Call(string video)
+        public PluginReturnValue Call(string video)
         {
             if (enabled == false)
             {
-                return false;
+                return new PluginReturnValue(false, Path.GetFileName(path));
             }
             ConsoleOutput.WriteLine($"Calling plugin {Path.GetFileName(path)}", Color.LightBlue);
             switch (type)
@@ -67,11 +77,11 @@ namespace YTPPlusPlusPlus
                     };
                     process.OutputDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data);
+                        ConsoleOutput.WriteLine(e.Data, Color.LightBlue);
                     };
                     process.ErrorDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                        ConsoleOutput.WriteLine(e.Data, Color.Transparent);
                     };
                     process.Start();
                     process.BeginOutputReadLine();
@@ -79,9 +89,9 @@ namespace YTPPlusPlusPlus
                     process.WaitForExit();
                     if (process.ExitCode == 0)
                     {
-                        return true;
+                        return new PluginReturnValue(true, Path.GetFileName(path));
                     }
-                    return false;
+                    return new PluginReturnValue(false, Path.GetFileName(path));
                 case PluginType.Batch:
                     // Batch plugins are the simplest.
                     List<string> batchArgs = new()
@@ -89,14 +99,15 @@ namespace YTPPlusPlusPlus
                         video,
                         SaveData.saveValues["VideoWidth"],
                         SaveData.saveValues["VideoHeight"],
-                        @".\temp",
+                        @".\temp\",
                         "ffmpeg",
                         "ffprobe",
                         "magick",
-                        Path.Join("library", "resources"), // legacy resources folder
-                        Path.Join("library", "audio", "sfx"),
-                        Path.Join("library", "videos", "transitions"),
-                        Path.Join("library", "audio", "music"),
+                        @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
+                        @".\" +Path.Join("library", "audio", "sfx") + @"\",
+                        @".\" +Path.Join("library", "videos", "transitions") + @"\",
+                        @".\" +Path.Join("library", "audio", "music") + @"\",
+                        @".\library\",
                     };
                     string batchArgsString = string.Join(" ", batchArgs);
                     ProcessStartInfo batchStartInfo = new()
@@ -115,11 +126,11 @@ namespace YTPPlusPlusPlus
                     };
                     batchProcess.OutputDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data);
+                        ConsoleOutput.WriteLine(e.Data, Color.LightBlue);
                     };
                     batchProcess.ErrorDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                        ConsoleOutput.WriteLine(e.Data, Color.Transparent);
                     };
                     batchProcess.Start();
                     batchProcess.BeginOutputReadLine();
@@ -127,100 +138,119 @@ namespace YTPPlusPlusPlus
                     batchProcess.WaitForExit();
                     if (batchProcess.ExitCode == 0)
                     {
-                        return true;
+                        return new PluginReturnValue(true, Path.GetFileName(path));
                     }
-                    return false;
-                case PluginType.Python:
-                    // Python plugins take full advantage of YTP+++ features.
-                    // The only argument is the video path.
-                    // Temporarily add plugins/py/lib to path.
-                    string pythonPath = Environment.GetEnvironmentVariable("PYTHONPATH");
-                    Environment.SetEnvironmentVariable("PYTHONPATH", Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins", "py", "lib"));
-                    ProcessStartInfo pythonStartInfo = new()
+                    return new PluginReturnValue(false, Path.GetFileName(path));
+                case PluginType.PowerShell:
+                    // ps1 plugins use the same format as batch with Set-ExecutionPolicy Bypass -Scope Process; path
+                    List<string> psArgs = new()
                     {
-                        FileName = "python",
-                        Arguments = $".\\py\\{Path.GetFileName(path)} generate \"{Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), video)}\"",
-                        WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
+                        "Set-ExecutionPolicy", "Bypass",
+                        "-Scope", "Process;",
+                        path,
+                        video,
+                        SaveData.saveValues["VideoWidth"],
+                        SaveData.saveValues["VideoHeight"],
+                        @".\temp\",
+                        "ffmpeg",
+                        "ffprobe",
+                        "magick",
+                        @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
+                        @".\" +Path.Join("library", "audio", "sfx") + @"\",
+                        @".\" +Path.Join("library", "videos", "transitions") + @"\",
+                        @".\" +Path.Join("library", "audio", "music") + @"\",
+                        @".\library\",
+                        SaveData.saveFileName, // powershell plugins can access the JSON save file
+                    };
+                    string psArgsString = string.Join(" ", psArgs);
+                    ProcessStartInfo psStartInfo = new()
+                    {
+                        FileName = "powershell",
+                        Arguments = psArgsString,
+                        WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
-                        CreateNoWindow = true,
+                        CreateNoWindow = true
                     };
-                    Process pythonProcess = new()
+                    Process psProcess = new()
                     {
-                        StartInfo = pythonStartInfo
+                        StartInfo = psStartInfo
                     };
-                    pythonProcess.OutputDataReceived += (sender, e) =>
+                    psProcess.OutputDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data);
+                        ConsoleOutput.WriteLine(e.Data, Color.LightBlue);
                     };
-                    pythonProcess.ErrorDataReceived += (sender, e) =>
+                    psProcess.ErrorDataReceived += (sender, e) =>
                     {
-                        ConsoleOutput.WriteLine(e.Data, Color.Red);
+                        ConsoleOutput.WriteLine(e.Data, Color.Transparent);
                     };
-                    pythonProcess.Start();
-                    pythonProcess.BeginOutputReadLine();
-                    pythonProcess.BeginErrorReadLine();
-                    pythonProcess.WaitForExit();
-                    // Remove plugins/py/lib from path.
-                    Environment.SetEnvironmentVariable("PYTHONPATH", pythonPath);
-                    if (pythonProcess.ExitCode == 0)
+                    psProcess.Start();
+                    psProcess.BeginOutputReadLine();
+                    psProcess.BeginErrorReadLine();
+                    psProcess.WaitForExit();
+                    if (psProcess.ExitCode == 0)
                     {
-                        return true;
+                        return new PluginReturnValue(true, Path.GetFileName(path));
                     }
-                    return false;
+                    return new PluginReturnValue(false, Path.GetFileName(path));
                 default:
-                    return false;
+                    return new PluginReturnValue(false, Path.GetFileName(path));
             }
         }
         public bool Query()
         {
-            // Only Python plugins can query.
-            if (type != PluginType.Python)
+            // Only plugins designed for YTP+++ can query.
+            if (type == PluginType.NodeJS)
             {
-                return true; // Don't error out if the plugin isn't Python.
+                return true; // Query is only supported for shell plugins.
             }
-            // Temporarily add plugins/py/lib to path.
-            string pythonPath = Environment.GetEnvironmentVariable("PYTHONPATH");
-            Environment.SetEnvironmentVariable("PYTHONPATH", Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins", "py", "lib"));
-            // Capture output from plugin.
-            ProcessStartInfo pythonStartInfo = new()
+            // Call plugin with query argument.
+            string fileName = path;
+            List<string> batchArgs = new();
+            if(type == PluginType.PowerShell)
             {
-                FileName = "python",
-                Arguments = $".\\py\\{Path.GetFileName(path)} query",
-                WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
+                fileName = "powershell";
+                batchArgs.Add("Set-ExecutionPolicy");
+                batchArgs.Add("Bypass");
+                batchArgs.Add("-Scope");
+                batchArgs.Add("Process;");
+                batchArgs.Add(path);
+            }
+            batchArgs.Add("query");
+            string batchArgsString = string.Join(" ", batchArgs);
+            ProcessStartInfo batchStartInfo = new()
+            {
+                FileName = fileName,
+                Arguments = batchArgsString,
+                WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                CreateNoWindow = true,
+                CreateNoWindow = true
             };
-            Process pythonProcess = new()
+            Process batchProcess = new()
             {
-                StartInfo = pythonStartInfo
+                StartInfo = batchStartInfo
             };
             string output = "";
-            pythonProcess.OutputDataReceived += (sender, e) =>
+            batchProcess.OutputDataReceived += (sender, e) =>
             {
                 output += e.Data;
             };
-            pythonProcess.ErrorDataReceived += (sender, e) =>
+            batchProcess.ErrorDataReceived += (sender, e) =>
             {
-                ConsoleOutput.WriteLine(e.Data, Color.Red);
+                ConsoleOutput.WriteLine(e.Data, Color.Transparent);
             };
-            pythonProcess.Start();
-            pythonProcess.WaitForExit();
-            // Check for errors.
-            if (pythonProcess.ExitCode != 0)
+            batchProcess.Start();
+            batchProcess.BeginOutputReadLine();
+            batchProcess.BeginErrorReadLine();
+            batchProcess.WaitForExit();
+            if (batchProcess.ExitCode != 0)
             {
-                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} returned an error code.", Color.Red);
-                for (int i = 0; i < output.Split('\n').Length; i++)
-                {
-                    ConsoleOutput.WriteLine(output.Split('\n')[i]);
-                }
+                ConsoleOutput.WriteLine(output, Color.Red);
                 return false;
             }
-            // Remove plugins/py/lib from path.
-            Environment.SetEnvironmentVariable("PYTHONPATH", pythonPath);
             // Parse output.
             output = output.Replace("\r", "").Replace("\n", "");
             string[] query = output.Split(';');
@@ -231,20 +261,23 @@ namespace YTPPlusPlusPlus
                 // Second character is a colon for separation
                 // Rest is the pretty name, then a colon, then the base name.
                 string[] split = query[i].Split(':');
-                if (split.Length != 3)
+                if (split.Length < 3)
                 {
                     continue;
                 }
                 LibraryRootType rootType = split[0] == "0" ? LibraryRootType.Video : LibraryRootType.Audio;
-                LibraryType dummyType = new(rootType, split[2]);
-                string libPath = Path.Join("library", rootType == LibraryRootType.Video ? "video" : "audio", split[2]);
+                // split[3] is description
+                string description = split.Length >= 4 ? split[3].Replace("_", " ") : "";
+                LibraryType dummyType = new(rootType, split[2].Replace("_", ""), description);
+                string libPath = Path.Join(rootType == LibraryRootType.Video ? "video" : "audio", split[2]);
                 string[] fileExts = LibraryData.libraryFileTypes[rootType == LibraryRootType.Video ? DefaultLibraryTypes.Video : DefaultLibraryTypes.Audio];
                 DefaultLibraryTypes.AllTypes.Add(dummyType);
                 LibraryData.libraryPaths.Add(dummyType, libPath);
                 LibraryData.libraryFileTypes.Add(dummyType, fileExts);
                 LibraryData.libraryNames.Add(dummyType, split[1].Replace("_", " "));
+                Global.justCompletedRender = true; // demand a refresh
                 // Print to console.
-                ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.", Color.Green);
+                ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.", Color.LightBlue);
                 count++;
             }
             // Print count
@@ -254,7 +287,7 @@ namespace YTPPlusPlusPlus
         }
     }
     /// <summary>
-    /// Python, Node.JS, and Batch plugin support.
+    /// Plugin support.
     /// </summary>
     public static class PluginHandler
     {
@@ -266,7 +299,7 @@ namespace YTPPlusPlusPlus
             if(!plugin.Query())
                 throw new Exception($"Failed to query plugin {Path.GetFileName(path)}.");
             plugins.Add(plugin);
-            ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.", Color.Green);
+            ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.", Color.LightBlue);
         }
         private static void LoadPluginsRecursive(string path, PluginType type)
         {
@@ -274,22 +307,6 @@ namespace YTPPlusPlusPlus
             {
                 switch(type)
                 {
-                    case PluginType.Python:
-                        // Python plugins can be .py or a subdir with __init__.py.
-                        // Skip lib folder
-                        if (path.Contains("/lib/") || path.Contains("\\lib\\"))
-                        {
-                            break;
-                        }
-                        else if(Path.GetFileNameWithoutExtension(file) == "__init__")
-                        {
-                            LoadPlugin(Path.GetDirectoryName(file), type);
-                        }
-                        else if (file.EndsWith(".py"))
-                        {
-                            LoadPlugin(file, type);
-                        }
-                        break;
                     case PluginType.NodeJS:
                         if (file.EndsWith(".js"))
                         {
@@ -298,6 +315,12 @@ namespace YTPPlusPlusPlus
                         break;
                     case PluginType.Batch:
                         if (file.EndsWith(".bat"))
+                        {
+                            LoadPlugin(file, type);
+                        }
+                        break;
+                    case PluginType.PowerShell:
+                        if (file.EndsWith(".ps1"))
                         {
                             LoadPlugin(file, type);
                         }
@@ -322,9 +345,9 @@ namespace YTPPlusPlusPlus
             ConsoleOutput.WriteLine($"Searching for plugins in {pluginPath}...", Color.LightBlue);
             List<string> pluginDirs = new()
             {
-                "py",
                 "js",
-                "bat"
+                "bat",
+                "ps1"
             };
             // Create plugin subdirectories if they don't exist.
             foreach(string subdir in pluginDirs)
@@ -343,14 +366,6 @@ namespace YTPPlusPlusPlus
                     PluginType type = PluginType.None;
                     switch (dirName)
                     {
-                        case "py":
-                            if (!UpdateManager.pythonInstalled)
-                            {
-                                ConsoleOutput.WriteLine("Python is not installed. Skipping Python plugins.", Color.Red);
-                                break;
-                            }
-                            type = PluginType.Python;
-                            break;
                         case "js":
                             if (!UpdateManager.nodeInstalled)
                             {
@@ -361,6 +376,9 @@ namespace YTPPlusPlusPlus
                             break;
                         case "bat":
                             type = PluginType.Batch;
+                            break;
+                        case "ps1":
+                            type = PluginType.PowerShell;
                             break;
                     }
                     if (type == PluginType.None)
@@ -376,20 +394,32 @@ namespace YTPPlusPlusPlus
             }
             return true;
         }
-        public static bool PickRandom(Random rnd, string video)
+        public static PluginReturnValue PickRandom(Random rnd, string video)
         {
+            if(plugins.Count == 0)
+            {
+                return new PluginReturnValue()
+                {
+                    success = false,
+                    pluginName = "",
+                };
+            }
             // Pick a random plugin.
             Plugin plugin = plugins[rnd.Next(plugins.Count)];
             // Call the plugin.
             return plugin.Call(video);
         }
-        public static bool PickNamed(string name, string video)
+        public static PluginReturnValue PickNamed(string name, string video)
         {
             // Find the plugin.
             Plugin? plugin = plugins.Find(x => Path.GetFileName(x.path) == name);
             if (plugin == null)
             {
-                return false;
+                return new PluginReturnValue()
+                {
+                    success = false,
+                    pluginName = "",
+                };
             }
             // Call the plugin.
             return plugin.Call(video);
