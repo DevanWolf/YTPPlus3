@@ -47,8 +47,8 @@ $speed = Get-Random -Minimum 0 -Maximum 2
 # Apply speed filter
 if ($speed -eq 0) {
     # Speed up
-    ffmpeg -i "$temp1" -filter:v setpts=0.5*PTS -filter:a atempo=2.0 -y "$video"
+    .\ffmpeg.exe -i "$temp1" -filter:v setpts=0.5*PTS -filter:a atempo=2.0 -y "$video"
 } else {
     # Slow down
-    ffmpeg -i "$temp1" -filter:v setpts=2.0*PTS -filter:a atempo=0.5 -y "$video"
+    .\ffmpeg.exe -i "$temp1" -filter:v setpts=2.0*PTS -filter:a atempo=0.5 -y "$video"
 }

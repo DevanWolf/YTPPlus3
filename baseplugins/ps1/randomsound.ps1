@@ -37,6 +37,14 @@ $librarypath = Join-Path $librarypath sfx
 $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
+# Make randomsound "" if it doesn't exist
+if ($null -eq $randomSound) {
+    $randomSound = ".\.null"
+}
+else {
+    $randomSound = $randomSound.FullName
+}
+
 # Pick whether or not to mute original audio
 $muteOriginalAudio = Get-Random -Minimum 0 -Maximum 1
 
@@ -52,12 +60,10 @@ if (Test-Path $randomSound) {
         Rename-Item $video "temp.mp4"
     }
 
-    $randomSound = $randomSound.FullName
-
     # Use original audio if equal to 0
     if ($muteOriginalAudio -eq 0) {
-        ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
+        .\ffmpeg.exe -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
     } else {
-        ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=0[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
+        .\ffmpeg.exe -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=0[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
     }
 }

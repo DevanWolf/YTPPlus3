@@ -56,7 +56,7 @@ namespace YTPPlusPlusPlus
                         @".\ffmpeg.exe",
                         @".\ffprobe.exe",
                         "magick",
-                        @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
+                        @".\library\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",
                         @".\" +Path.Join("library", "videos", "transitions") + @"\",
                         @".\" +Path.Join("library", "audio", "music") + @"\",
@@ -108,7 +108,7 @@ namespace YTPPlusPlusPlus
                         @".\ffmpeg.exe",
                         @".\ffprobe.exe",
                         "magick",
-                        @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
+                        @".\library\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",
                         @".\" +Path.Join("library", "videos", "transitions") + @"\",
                         @".\" +Path.Join("library", "audio", "music") + @"\",
@@ -244,6 +244,7 @@ namespace YTPPlusPlusPlus
         public static void LoadPlugin(string path, PluginType type)
         {
             Plugin plugin = new(path, type);
+            Global.generatorFactory.progressText = $"Loading plugin {Path.GetFileName(path)}...";
             if(!plugin.Query())
                 throw new Exception($"Failed to query plugin {Path.GetFileName(path)}.");
             plugins.Add(plugin);
@@ -300,6 +301,7 @@ namespace YTPPlusPlusPlus
             }
             try
             {
+                int count = 0;
                 // Load from plugin path using subdirectories for each plugin type.
                 foreach (string file in Directory.GetDirectories(pluginPath))
                 {
@@ -318,7 +320,10 @@ namespace YTPPlusPlusPlus
                         continue;
                     ConsoleOutput.WriteLine($"Loading {dirName} plugins...", Color.LightBlue);
                     LoadPluginsRecursive(file, type);
+                    count += plugins.Count;
                 }
+                Global.generatorFactory.progressText = $"{count} plugins, check console for details.";
+                Global.canRender = true;
             }
             catch (Exception e)
             {

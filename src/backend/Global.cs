@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -21,6 +22,9 @@ namespace YTPPlusPlusPlus
         public static bool tennisMode = false;
         public static int tennisScore = 1;
         public static bool dragDrop = false;
+        public static bool ready = false;
+        public static double readyTime = 0;
+        public static bool canRender = false;
         public static List<string> dragDropFiles = new();
         // YTP+ variables.
         public static GeneratorFactory generatorFactory = new GeneratorFactory();

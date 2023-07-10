@@ -16,7 +16,7 @@ namespace YTPPlusPlusPlus
         /// The title of the screen. This is displayed on the header bar.
         /// </summary>
         public string title { get; } = "Border";
-        public int layer { get; } = 15;
+        public int layer { get; } = 100;
         public ScreenType screenType { get; set; } = ScreenType.Drawn;
         public int currentPlacement { get; set; } = -1;
         private float exitOpacity = 0f;

@@ -205,6 +205,11 @@ namespace YTPPlusPlusPlus
                 switch(i)
                 {
                     case 2: // left click
+                        if(!Global.canRender)
+                        {
+                            GlobalContent.GetSound("Error").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            return true;
+                        }
                         GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         Global.generatorFactory.StartGeneration((sender, e) => {
                             if(e.ProgressPercentage == 100)

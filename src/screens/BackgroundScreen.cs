@@ -48,7 +48,7 @@ namespace YTPPlusPlusPlus
         public string title { get; } = "Background";
         public int layer { get; } = 0;
         public int currentPlacement { get; set; } = -1;
-        public ScreenType screenType { get; set; } = ScreenType.Drawn;
+        public ScreenType screenType { get; set; } = ScreenType.Hidden;
         private static int totalCount = 1024;
         private int scrollX = 0;
         private int scrollY = 0;

@@ -47,8 +47,8 @@ $chorusOrVibrato = Get-Random -Minimum 0 -Maximum 2
 # Apply DSP filter
 if ($chorusOrVibrato -eq 0) {
     # Chorus
-    ffmpeg -i "$temp1" -af chorus="0.5:0.9:50|60|40:0.4|0.32|0.3:0.25|0.4|0.3:2|2.3|1.3" -y "$video"
+    .\ffmpeg.exe -i "$temp1" -af chorus="0.5:0.9:50|60|40:0.4|0.32|0.3:0.25|0.4|0.3:2|2.3|1.3" -y "$video"
 } else {
     # Vibrato
-    ffmpeg -i "$temp1" -af vibrato=f=7.0:d=0.5 -y "$video"
+    .\ffmpeg.exe -i "$temp1" -af vibrato=f=7.0:d=0.5 -y "$video"
 }

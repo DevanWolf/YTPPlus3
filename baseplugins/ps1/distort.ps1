@@ -41,13 +41,19 @@ $librarypath = Join-Path $librarypath distort
 $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
+# Make randomsound "" if it doesn't exist
+if ($null -eq $randomSound) {
+    $randomSound = ".\.null"
+}
+else {
+    $randomSound = $randomSound.FullName
+}
+
 # Random sound not found?
 if (-not (Test-Path $randomSound)) {
     Write-Host "No random sound found."
     exit 0
 }
-
-$randomSound = $randomSound.FullName
 
 # Load options as json
 $optionsjson = Get-Content $options | ConvertFrom-Json
@@ -148,5 +154,5 @@ if (Test-Path $video) {
 }
 
 # Concat distort
-ffmpeg -f concat -i $concatdistort -i $randomSound -c:v libx264 -c:a aac -pix_fmt yuv420p -y "$video"
+.\ffmpeg.exe -f concat -i $concatdistort -i $randomSound -c:v libx264 -c:a aac -pix_fmt yuv420p -y "$video"
 

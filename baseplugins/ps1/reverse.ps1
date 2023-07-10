@@ -55,7 +55,7 @@ $forwardReverse = Get-Random -Minimum 0 -Maximum 2
 # Apply reverse filter
 if ($forwardReverse -eq 0) {
     # Normal reverse
-    ffmpeg -i "$temp1" -vf reverse -af areverse -y "$video"
+    .\ffmpeg.exe -i "$temp1" -vf reverse -af areverse -y "$video"
 } else {
     # Half forward, half reverse
     # Get length of video
@@ -63,9 +63,9 @@ if ($forwardReverse -eq 0) {
     # Get half of length
     $halfLength = $length / 2
     # Split video into two parts
-    ffmpeg -i "$temp1" -t $halfLength -y "$temp2"
+    .\ffmpeg.exe -i "$temp1" -t $halfLength -y "$temp2"
     # Reverse second part
-    ffmpeg -i "$temp2" -vf reverse -af areverse -y "$temp3"
+    .\ffmpeg.exe -i "$temp2" -vf reverse -af areverse -y "$temp3"
     # Concatenate two parts
-    ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0]concat=n=2:v=1:a=1[v][a]" -map "[v]" -map "[a]" -y "$video"
+    .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0]concat=n=2:v=1:a=1[v][a]" -map "[v]" -map "[a]" -y "$video"
 }

@@ -55,34 +55,30 @@ $librarypath = Join-Path $librarypath music
 $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
-# Load options as json
-$optionsjson = Get-Content $options | ConvertFrom-Json
+# Make randomsound "" if it doesn't exist
+if ($null -eq $randomSound) {
+    $randomSound = ".\.null"
+}
+else {
+    $randomSound = $randomSound.FullName
+}
 
-# Get stream duration from options
-$minStreamDuration = $optionsjson.MinStreamDuration
-$maxStreamDuration = $optionsjson.MaxStreamDuration
-
-# Parse as float
-$minStreamDuration = [float]$minStreamDuration
-$maxStreamDuration = [float]$maxStreamDuration
-
-# Pick random time
-$randomTime = Get-Random -Minimum $minStreamDuration -Maximum $maxStreamDuration
+# Time for dance
+$randomTime = 0.15
 
 # Pick random roll
 $useOriginalAudioRoll = Get-Random -Minimum 0 -Maximum 7
 
 # Apply effects
 if((-not (Test-Path $randomSound)) -or ($useOriginalAudioRoll -eq 0)) {
-    ffmpeg -i "$temp1" -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"
+    .\ffmpeg.exe -i "$temp1" -t $randomTime -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"
     ffmpeg -i "$temp2" -vf reverse -af areverse -y "$temp3"
     ffmpeg -i "$temp3" -i "$temp2" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out];[0:a][1:a][0:a][1:a][0:a][1:a][0:a][1:a]concat=n=8:v=0:a=1[out2]" -map "[out]" -map "[out2]" -shortest -y "$video"
 }
 else {
-    $randomSound = $randomSound.FullName
     # Seek audio 1-5 seconds ahead to avoid silence at the beginning
     $seek = Get-Random -Minimum 1 -Maximum 5
-    ffmpeg -i "$temp1" -an -vf setpts=.5*PTS -t $randomTime -y "$temp2"
+    ffmpeg -i "$temp1" -an -t $randomTime -vf setpts=.5*PTS -y "$temp2"
     ffmpeg -i "$temp2" -vf reverse -y "$temp3"
     ffmpeg -i "$temp3" -i "$temp2" -ss $seek -i "$randomSound" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out]" -map "[out]" -map 2:a -shortest -y "$video"
 }

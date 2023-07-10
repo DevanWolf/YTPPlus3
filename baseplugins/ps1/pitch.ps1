@@ -47,8 +47,8 @@ $pitchUpOrDown = Get-Random -Minimum 0 -Maximum 2
 # Apply pitch filter
 if ($pitchUpOrDown -eq 0) {
     # Higher pitch
-    ffmpeg -i "$temp1" -filter:v setpts=0.5*PTS -af asetrate=44100*2,aresample=44100 -y "$video"
+    .\ffmpeg.exe -i "$temp1" -filter:v setpts=0.5*PTS -af asetrate=44100*2,aresample=44100 -y "$video"
 } else {
     # Lower pitch
-    ffmpeg -i "$temp1" -filter:v setpts=2.0*PTS -af asetrate=44100/2,aresample=44100 -y "$video"
+    .\ffmpeg.exe -i "$temp1" -filter:v setpts=2.0*PTS -af asetrate=44100/2,aresample=44100 -y "$video"
 }

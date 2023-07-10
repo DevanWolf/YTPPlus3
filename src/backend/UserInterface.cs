@@ -103,8 +103,6 @@ namespace YTPPlusPlusPlus
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             // Load default content.
             GlobalContent.LoadDefaultContent(Content, GraphicsDevice);
-            // Play startup sound.
-            GlobalContent.GetSound("Start").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
             // Find music.
             FindMusic();
             // Load all screen content.
@@ -141,7 +139,7 @@ namespace YTPPlusPlusPlus
         protected override void Update(GameTime gameTime)
         {
             // Play music after 500ms.
-            if(gameTime.TotalGameTime.TotalMilliseconds > 2500)
+            if(gameTime.TotalGameTime.TotalMilliseconds > Global.readyTime + 2500 && Global.ready)
             {
                 // Exchange music if it's not the same as the active music.
                 if(_musicActive != int.Parse(SaveData.saveValues["ActiveMusic"]))

@@ -20,7 +20,7 @@ namespace YTPPlusPlusPlus
         /// </summary>
         public string title { get; } = "Header";
         public int layer { get; } = 4;
-        public ScreenType screenType { get; set; } = ScreenType.Drawn;
+        public ScreenType screenType { get; set; } = ScreenType.Hidden;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = false;
         private bool showing = false;

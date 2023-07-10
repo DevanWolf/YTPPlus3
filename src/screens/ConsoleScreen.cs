@@ -15,7 +15,7 @@ namespace YTPPlusPlusPlus
     {
         public string title { get; } = "Console";
         public int layer { get; } = 14;
-        public ScreenType screenType { get; set; } = ScreenType.Drawn;
+        public ScreenType screenType { get; set; } = ScreenType.Hidden;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = true;
         private bool showing = false;
@@ -86,7 +86,7 @@ namespace YTPPlusPlusPlus
             // Tween
             tween.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
             // Show/hide console when you press ` (tilde).
-            if (oldKeyboardState.IsKeyDown(Keys.OemTilde) && newKeyboardState.IsKeyUp(Keys.OemTilde))
+            if (oldKeyboardState.IsKeyDown(Keys.OemTilde) && newKeyboardState.IsKeyUp(Keys.OemTilde) && Global.ready)
             {
                 if(Toggle())
                     GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
