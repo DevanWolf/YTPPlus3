@@ -52,35 +52,12 @@ It will also create a shortcut on your desktop and in your Start Menu.
             # Check if .NET 6 Desktop Runtime is installed.
             Write-Host "Checking if .NET 6 Desktop Runtime is installed..." -ForegroundColor Yellow
             if (-not (Get-Command dotnet)) {
-                # Check if winget is installed.
-                Write-Host "Checking if winget is installed..." -ForegroundColor Yellow
-                if (-not (Get-Command winget)) {
-                    # If winget is not installed, install it.
-                    Write-Host "Installing winget..." -ForegroundColor Yellow
-                    Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
-
-                    # Refresh PATH.
-                    Write-Host "Refreshing PATH..." -ForegroundColor Yellow
-                    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-                }
-
-                # Install .NET 6 Desktop Runtime with winget or msi.
-                if (Get-Command winget) {
-                    # Winget is now installed.
-                    Write-Host "winget is now installed." -ForegroundColor Green
-                    # If winget is installed, install .NET 6 Desktop Runtime with winget.
-                    Write-Host "Installing .NET 6 Desktop Runtime with winget..." -ForegroundColor Yellow
-                    winget install Microsoft.DotNet.DesktopRuntime.6
-                }
-                else {
-                    Write-Host "Installation for winget failed. Trying msi..." -ForegroundColor Yellow
-                    # If winget is not installed, install .NET 6 Desktop Runtime with msi.
-                    Write-Host "Installing .NET 6 Desktop Runtime with msi..." -ForegroundColor Yellow
-                    $dotneturl = "https://download.visualstudio.microsoft.com/download/pr/7bb7f85b-9bf0-4c6f-b3e4-a3832720f162/73e280cfd7f686c34748e0bf98d879c7/dotnet-runtime-6.0.19-win-x64.exe"
-                    $dotnetpath = "$env:TEMP\dotnet-runtime-6.0.19-win-x64.exe"
-                    Invoke-WebRequest -Uri $dotneturl -OutFile $dotnetpath
-                    Start-Process -FilePath $dotnetpath -ArgumentList "/install /quiet /norestart" -Wait
-                }
+                # If .NET 6 Desktop Runtime is not installed, install it.
+                Write-Host "Installing .NET 6 Desktop Runtime..." -ForegroundColor Yellow
+                $dotneturl = "https://download.visualstudio.microsoft.com/download/pr/30841ca9-5538-40c3-9022-d1ba1e69f6e8/aa94715bc3d74ee0b2e27de757ef0cdb/windowsdesktop-runtime-6.0.19-win-x64.exe"
+                $dotnetpath = "$env:TEMP\dotnet-runtime-6.0.19-win-x64.exe"
+                Invoke-WebRequest -Uri $dotneturl -OutFile $dotnetpath
+                Start-Process -FilePath $dotnetpath -ArgumentList "/install /quiet /norestart" -Wait
 
                 # Refresh PATH.
                 Write-Host "Refreshing PATH..." -ForegroundColor Yellow
@@ -114,7 +91,7 @@ It will also create a shortcut on your desktop and in your Start Menu.
             # Get asset URLs.
             $ytpAsset = $ytp.assets[0]
             $ytpDownload = $ytpAsset.browser_download_url
-            $ytpVersion = $ytpAsset.tag_name
+            $ytpVersion = $ytp.tag_name
 
             # Download asset.
             Write-Host "Downloading YTP+++ $ytpVersion..." -ForegroundColor Yellow

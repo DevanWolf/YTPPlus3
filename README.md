@@ -96,7 +96,7 @@ These software packages are required to run YTP+++. They are not included in the
   - Bundled from v3.1.2 onwards.
   - YTP+++ will only use `.\ffmpeg.exe` and will avoid using the system FFmpeg.
   - If you would like to update this bundled version, see below:
-    - Download the gyan.dev **full** release from [here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z).
+    - Download the gyan.dev **essentials** release from [here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z).
     - Extract the zip file to the YTP+++ installation directory.
       - When deploying, this is `C:\YTPPlusPlusPlus`.
 
