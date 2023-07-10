@@ -19,7 +19,6 @@ namespace YTPPlusPlusPlus
         public static string updateTag = "";
         public static bool ffmpegInstalled = false;
         public static bool ffprobeInstalled = false;
-        public static bool nodeInstalled = false;
         public static bool imagemagickInstalled = false;
         public static bool updateFailed = false;
         public static bool updateAvailable = false;
@@ -28,11 +27,10 @@ namespace YTPPlusPlusPlus
             // Test for dependencies.
             ConsoleOutput.WriteLine("Checking for dependencies...", Microsoft.Xna.Framework.Color.Magenta);
             bool[] status = new bool[4];
-            string[] commands = new string[4]
+            string[] commands = new string[3]
             {
-                "ffmpeg",
-                "ffprobe",
-                "node",
+                @".\ffmpeg.exe",
+                @".\ffprobe.exe",
                 "magick"
             };
             for (int i = 0; i < commands.Length; i++)
@@ -58,23 +56,20 @@ namespace YTPPlusPlusPlus
             }
             ffmpegInstalled = status[0];
             ffprobeInstalled = status[1];
-            nodeInstalled = status[2];
-            imagemagickInstalled = status[3];
+            imagemagickInstalled = status[2];
             return status;
         }
         public static string GetDependencies()
         {
-            string[] commands = new string[4]
+            string[] commands = new string[3]
             {
-                "ffmpeg",
-                "ffprobe",
-                "node",
+                "ffmpeg.exe",
+                "ffprobe.exe",
                 "magick"
             };
             return commands[0] + ": " + ffmpegInstalled + "\n" +
                    commands[1] + ": " + ffprobeInstalled + "\n" +
-                   commands[2] + ": " + nodeInstalled + "\n" +
-                   commands[3] + ": " + imagemagickInstalled;
+                   commands[2] + ": " + imagemagickInstalled;
         }
         public static bool CheckForUpdates()
         {

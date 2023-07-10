@@ -72,19 +72,18 @@ $randomTime = Get-Random -Minimum $minStreamDuration -Maximum $maxStreamDuration
 # Pick random roll
 $useOriginalAudioRoll = Get-Random -Minimum 0 -Maximum 7
 
-# Use original audio if equal to 0
-if (($null -ne $randomSound) -and ($useOriginalAudioRoll -eq 0)) {
-    $randomSound = $randomSound.FullName
+# Apply effects
+if((-not (Test-Path $randomSound)) -or ($useOriginalAudioRoll -eq 0)) {
     ffmpeg -i "$temp1" -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"
-    ffmpeg -i "$temp2" -vf reverse -y "$temp3"
+    ffmpeg -i "$temp2" -vf reverse -af areverse -y "$temp3"
     ffmpeg -i "$temp3" -i "$temp2" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out];[0:a][1:a][0:a][1:a][0:a][1:a][0:a][1:a]concat=n=8:v=0:a=1[out2]" -map "[out]" -map "[out2]" -shortest -y "$video"
 }
-
-# Use random audio
 else {
+    $randomSound = $randomSound.FullName
     # Seek audio 1-5 seconds ahead to avoid silence at the beginning
     $seek = Get-Random -Minimum 1 -Maximum 5
     ffmpeg -i "$temp1" -an -vf setpts=.5*PTS -t $randomTime -y "$temp2"
     ffmpeg -i "$temp2" -vf reverse -y "$temp3"
     ffmpeg -i "$temp3" -i "$temp2" -ss $seek -i "$randomSound" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out]" -map "[out]" -map 2:a -shortest -y "$video"
 }
+

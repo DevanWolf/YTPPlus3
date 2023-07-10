@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "watch",
+            "type": "shell",
+            "command": "${workspaceFolder}\\bin\\Debug\\net6.0-windows\\YTP+++.exe",
+            "options":
+            {
+                "cwd": "${workspaceFolder}\\bin\\Debug\\net6.0-windows",
+            }
+        },
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}\\YTP+++.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}\\YTP+++.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "/p:Configuration=Release"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+    ]
+}

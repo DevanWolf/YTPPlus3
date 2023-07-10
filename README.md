@@ -88,29 +88,28 @@ These software packages are required to run YTP+++. They are not included in the
 - Windows
   - YTP+++ is only supported on Windows, but it may be possible to run it on other operating systems with Wine or a similar tool.
     - Support will not be provided for Wine due to lack of knowledge.
-- FFmpeg
-  - Download the gyan.dev essential release from [here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip).
-  - Extract the zip file to a directory that does not include spaces in the path.
-    - For example, `C:\FFMPEG` is a good path, but `C:\Program Files\FFMPEG` is not.
-  - Add the `bin` directory to your PATH environment variable.
-    - See [Adding an Environment Variable](#adding-an-environment-variable) for instructions.
-- .NET 6.0
+- .NET 6 Desktop Runtime
   - Download the .NET Desktop Runtime from [here](https://dotnet.microsoft.com/download/dotnet/6.0/runtime).
     - Please ensure that you download the **Run Desktop Apps** x64 version.
   - Install the .NET Desktop Runtime.
+- FFmpeg
+  - Bundled from v3.1.2 onwards.
+  - YTP+++ will only use `.\ffmpeg.exe` and will avoid using the system FFmpeg.
+  - If you would like to update this bundled version, see below:
+    - Download the gyan.dev **full** release from [here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z).
+    - Extract the zip file to the YTP+++ installation directory.
+      - When deploying, this is `C:\YTPPlusPlusPlus`.
 
 ### Optional
 
-- Node.JS
-  - This is only required if you want to use legacy Node.JS plugins from YTP+ CLI.
-  - Download Node.JS from [here](https://nodejs.org/en/download/).
-  - Install Node.JS.
 - ImageMagick
-  - Plugins may require ImageMagick to be installed. It is not required for YTP+++ to function.
+  - Plugins, such as `distort.ps1`, require ImageMagick to be installed.
+  - When ImageMagick is not installed, `distort.ps1` will use an alternative method.
   - Download ImageMagick from [here](https://imagemagick.org/script/download.php#windows).
     - Please ensure that you download the **Win64 *static* at 16 bits-per-pixel component with high dynamic-range imaging enabled** version.
     - Do not download the dynamic version.
   - Install ImageMagick.
+    - Ensure that FFmpeg is *not* selected during installation.
 
 ## Adding an Environment Variable
 

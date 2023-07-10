@@ -28,12 +28,6 @@ $music = $args[10]
 $library = $args[11]
 $options = $args[12]
 
-# Check if command "magick" exists
-if (-not (Get-Command magick -ErrorAction SilentlyContinue)) {
-    Write-Host "This plugin requires ImageMagick."
-    exit 1
-}
-
 # Delete distort files
 for ($i = 0; $i -lt 6; $i++) {
     if (Test-Path $temp"distort$i.png") {
@@ -48,7 +42,7 @@ $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
 # Random sound not found?
-if ($null -eq $randomSound) {
+if (-not (Test-Path $randomSound)) {
     Write-Host "No random sound found."
     exit 0
 }
@@ -78,26 +72,53 @@ $distort5 = Join-Path $temp distort5.png
 $concatdistort = Join-Path $temp concatdistort.txt
 
 # Create black frame
-magick convert -size $width"x"$height canvas:black $black
+if (Get-Command magicck -ErrorAction SilentlyContinue) {
+    magick convert -size $width"x"$height canvas:black $black
+} else {
+    # Use FFmpeg to create black frame
+    ffmpeg -f lavfi -i color=c=black:s=$width"x"$height -frames:v 1 -y $black
+}
 
 # Create one frame from video
 ffmpeg -i $video -ss 0 -update 1 -q:v 1 -y $distort0
 
 # Apply effect 5 times
-for ($i = 1; $i -lt 6; $i++) {
-    $effect = Get-Random -Minimum 0 -Maximum 7
-    $command = ""
-    switch($effect) {
-        0 {$command = "-flop"}
-        1 {$command = "-flip"}
-        2 {$command = "-implode $(Get-Random -Minimum -3 -Maximum -1)"}
-        3 {$command = "-implode $(Get-Random -Minimum 1 -Maximum 3)"}
-        4 {$command = "-swirl $(Get-Random -Minimum 1 -Maximum 180)"}
-        5 {$command = "-swirl $(Get-Random -Minimum -180 -Maximum -1)"}
-        6 {$command = "-channel RGB -negate"}
+if (Get-Command magicck -ErrorAction SilentlyContinue) {
+    for ($i = 1; $i -lt 6; $i++) {
+        $effect = Get-Random -Minimum 0 -Maximum 8
+        $command = ""
+        switch($effect) {
+            0 {$command = "-flop "}
+            1 {$command = "-flip "}
+            2 {$command = "-implode $(Get-Random -Minimum -3 -Maximum -1)"}
+            3 {$command = "-implode $(Get-Random -Minimum 1 -Maximum 3)"}
+            4 {$command = "-swirl $(Get-Random -Minimum 1 -Maximum 180)"}
+            5 {$command = "-swirl $(Get-Random -Minimum -180 -Maximum -1)"}
+            6 {$command = "-channel RGB -negate"}
+            7 {$command = ""}
+        }
+        $magickexec = "magick convert $distort0 $command $distort$i.png"
+        Invoke-Expression $magickexec
     }
-    $magickexec = "magick convert $distort0 $command $distort$i.png"
-    Invoke-Expression $magickexec
+}
+# Otherwise, flip and flop with FFmpeg
+else {
+    for ($i = 1; $i -lt 6; $i++) {
+        $effect = Get-Random -Minimum 0 -Maximum 8
+        $command = ""
+        switch($effect) {
+            0 {$command = "-vf hflip"}
+            1 {$command = "-vf vflip"}
+            2 {$command = "-vf hflip"}
+            3 {$command = "-vf negate"}
+            4 {$command = "-vf negate"}
+            5 {$command = "-vf vflip"}
+            6 {$command = "-vf negate"}
+            7 {$command = ""}
+        }
+        $ffmpegexec = "ffmpeg -i $distort0 $command -frames:v 1 -y $distort$i.png"
+        Invoke-Expression $ffmpegexec
+    }
 }
 
 # Delete concatdistort.txt

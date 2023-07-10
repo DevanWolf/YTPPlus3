@@ -40,8 +40,8 @@ $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.o
 # Pick whether or not to mute original audio
 $muteOriginalAudio = Get-Random -Minimum 0 -Maximum 1
 
-# Use original audio if equal to 0
-if ($null -ne $randomSound) {
+# Apply random sound
+if (Test-Path $randomSound) {
     # Delete temp files
     if (Test-Path $temp1) {
         Remove-Item $temp1
@@ -53,6 +53,8 @@ if ($null -ne $randomSound) {
     }
 
     $randomSound = $randomSound.FullName
+
+    # Use original audio if equal to 0
     if ($muteOriginalAudio -eq 0) {
         ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
     } else {

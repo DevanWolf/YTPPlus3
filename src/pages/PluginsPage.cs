@@ -29,8 +29,8 @@ namespace YTPPlusPlusPlus
             // Add labels
             controller.Add("Plugin7", new Label("be sure to ask on the YTP+ Hub Discord.", new Vector2(139, 60+12*7)));
             controller.Add("Plugin6", new Label("If you have any questions or need help,", new Vector2(139, 60+12*6)));
-            controller.Add("Plugin5", new Label("support is deprecated.", new Vector2(139, 60+12*4)));
-            controller.Add("Plugin4", new Label("the most supported, while Node.js", new Vector2(139, 60+12*3)));
+            controller.Add("Plugin5", new Label("Python support have been removed.", new Vector2(139, 60+12*4)));
+            controller.Add("Plugin4", new Label("recommended, while Node.js and", new Vector2(139, 60+12*3)));
             controller.Add("Plugin3", new Label("folder. .bat and .ps1 plugins are", new Vector2(139, 60+12*2)));
             controller.Add("Plugin2", new Label("added or removed from the plugins", new Vector2(139, 60+12)));
             controller.Add("Plugin1", new Label("To toggle plugins, they must be", new Vector2(139, 60)));

@@ -12,7 +12,6 @@ namespace YTPPlusPlusPlus
     public enum PluginType
     {
         None,
-        NodeJS, // Optional, requires user to install NodeJS
         Batch,
         PowerShell,
     }
@@ -46,52 +45,6 @@ namespace YTPPlusPlusPlus
             ConsoleOutput.WriteLine($"Calling plugin {Path.GetFileName(path)}", Color.LightBlue);
             switch (type)
             {
-                case PluginType.NodeJS:
-                    // node handler is .\plugins\plugininterface.js
-                    Dictionary<string, string> args = new()
-                    {
-                        { "video", Path.GetFileName(video) },
-                        { "plugin", Path.GetFileName(path) },
-                        { "clips", SaveData.saveValues["MaxClipCount"] },
-                        { "minstream", SaveData.saveValues["MinStreamDuration"] },
-                        { "maxstream", SaveData.saveValues["MaxStreamDuration"] },
-                        { "width", SaveData.saveValues["VideoWidth"] },
-                        { "height", SaveData.saveValues["VideoHeight"] },
-                        { "fps", "30" },
-                        { "usetransitions", SaveData.saveValues["TransitionsEnabled"] == "true" ? "1" : "0" },
-                    };
-                    string argsString = string.Join(" ", args.Select(x => $"--{x.Key} {x.Value}"));
-                    ProcessStartInfo startInfo = new()
-                    {
-                        FileName = "node",
-                        Arguments = $"plugininterface.js {argsString}",
-                        WorkingDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins"),
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-                    Process process = new()
-                    {
-                        StartInfo = startInfo
-                    };
-                    process.OutputDataReceived += (sender, e) =>
-                    {
-                        ConsoleOutput.WriteLine(e.Data, Color.LightBlue);
-                    };
-                    process.ErrorDataReceived += (sender, e) =>
-                    {
-                        ConsoleOutput.WriteLine(e.Data, Color.Transparent);
-                    };
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    process.WaitForExit();
-                    if (process.ExitCode == 0)
-                    {
-                        return new PluginReturnValue(true, Path.GetFileName(path));
-                    }
-                    return new PluginReturnValue(false, Path.GetFileName(path));
                 case PluginType.Batch:
                     // Batch plugins are the simplest.
                     List<string> batchArgs = new()
@@ -100,8 +53,8 @@ namespace YTPPlusPlusPlus
                         SaveData.saveValues["VideoWidth"],
                         SaveData.saveValues["VideoHeight"],
                         @".\temp\",
-                        "ffmpeg",
-                        "ffprobe",
+                        @".\ffmpeg.exe",
+                        @".\ffprobe.exe",
                         "magick",
                         @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",
@@ -152,8 +105,8 @@ namespace YTPPlusPlusPlus
                         SaveData.saveValues["VideoWidth"],
                         SaveData.saveValues["VideoHeight"],
                         @".\temp\",
-                        "ffmpeg",
-                        "ffprobe",
+                        @".\ffmpeg.exe",
+                        @".\ffprobe.exe",
                         "magick",
                         @".\" + Path.Join("library", "resources") + @"\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",
@@ -200,11 +153,6 @@ namespace YTPPlusPlusPlus
         }
         public bool Query()
         {
-            // Only plugins designed for YTP+++ can query.
-            if (type == PluginType.NodeJS)
-            {
-                return true; // Query is only supported for shell plugins.
-            }
             // Call plugin with query argument.
             string fileName = path;
             List<string> batchArgs = new();
@@ -307,12 +255,6 @@ namespace YTPPlusPlusPlus
             {
                 switch(type)
                 {
-                    case PluginType.NodeJS:
-                        if (file.EndsWith(".js"))
-                        {
-                            LoadPlugin(file, type);
-                        }
-                        break;
                     case PluginType.Batch:
                         if (file.EndsWith(".bat"))
                         {
@@ -345,7 +287,6 @@ namespace YTPPlusPlusPlus
             ConsoleOutput.WriteLine($"Searching for plugins in {pluginPath}...", Color.LightBlue);
             List<string> pluginDirs = new()
             {
-                "js",
                 "bat",
                 "ps1"
             };
@@ -366,14 +307,6 @@ namespace YTPPlusPlusPlus
                     PluginType type = PluginType.None;
                     switch (dirName)
                     {
-                        case "js":
-                            if (!UpdateManager.nodeInstalled)
-                            {
-                                ConsoleOutput.WriteLine("Node.JS is not installed. Skipping Node.JS plugins.", Color.Red);
-                                break;
-                            }
-                            type = PluginType.NodeJS;
-                            break;
                         case "bat":
                             type = PluginType.Batch;
                             break;

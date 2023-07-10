@@ -128,10 +128,10 @@ namespace YTPPlusPlusPlus
                 " - FFprobe",
                 "",
                 "The following software is optional, but recommended:",
-                " - Node.JS (only for legacy YTP+ CLI plugin support)",
-                " - ImageMagick (some plugins may require this)",
+                " - ImageMagick",
                 "",
                 "If you have any issues, please refer to the installation guide.",
+                "You may check console at any time by pressing ~ (tilde).",
                 "Click \"Next Page\" to continue."
             },
             new List<string>()
@@ -144,7 +144,6 @@ namespace YTPPlusPlusPlus
                 " - FFprobe: %FFPROBE%",
                 "",
                 "Optional software:",
-                " - Node.JS: %NODEJS%",
                 " - ImageMagick: %IMAGEMAGICK%",
                 "",
                 "If any of the required software is missing, please install it.",
@@ -195,7 +194,6 @@ namespace YTPPlusPlusPlus
             Vector2 titleSize3 = GlobalGraphics.fontMunroSmall.MeasureString(title + ": Page 3/3");
             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, title + ": Page 3/3", new Vector2(GlobalGraphics.scaledWidth / 2 - titleSize3.X / 2 + GlobalGraphics.Scale(640), (6 * GlobalGraphics.scale) - GlobalGraphics.Scale(1-32)), Color.White);
             // Draw tutorial text
-            int offsetPage = 0;
             for(int i = 0; i < 3; i++)
             {
                 int offsetText = 0;
@@ -204,7 +202,6 @@ namespace YTPPlusPlusPlus
                     string dummyText = tutorialText[i][j];
                     dummyText = dummyText.Replace("%FFMPEG%", "Checking...");
                     dummyText = dummyText.Replace("%FFPROBE%", "Checking...");
-                    dummyText = dummyText.Replace("%NODEJS%", "Checking...");
                     dummyText = dummyText.Replace("%IMAGEMAGICK%", "Checking...");
                     dummyText = dummyText.Replace("%UPDATECHECK%", "Checking...");
                     Vector2 textSize = GlobalGraphics.fontMunroSmall.MeasureString(dummyText);
@@ -225,9 +222,6 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 43;
-                                    break;
-                                case 9:
                                     offset = 64;
                                     break;
                             }
@@ -246,9 +240,6 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 43;
-                                    break;
-                                case 9:
                                     offset = 64;
                                     break;
                             }
@@ -285,18 +276,14 @@ namespace YTPPlusPlusPlus
                                     offset = 47;
                                     break;
                                 case 8:
-                                    offset = 43;
-                                    break;
-                                case 9:
                                     offset = 64;
                                     break;
                             }
                             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Checking...", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.Yellow);
                         }
                     }
-                    offsetText += GlobalGraphics.Scale(4);
+                    offsetText += 8;
                 }
-                offsetPage += offsetText + GlobalGraphics.Scale(16);
             }
             // End offset spritebatch
             spriteBatch.End();
@@ -321,7 +308,6 @@ namespace YTPPlusPlusPlus
                 {
                     tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
                     tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
-                    tutorialText[h][j] = tutorialText[h][j].Replace("%NODEJS%", UpdateManager.nodeInstalled ? "Installed" : "Not installed");
                     tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
                 }
             }
