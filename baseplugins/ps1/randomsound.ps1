@@ -31,27 +31,28 @@ $options = $args[12]
 # Temp files
 $temp1 = Join-Path $temp "temp.mp4"
 
-# Delete temp files
-if (Test-Path $temp1) {
-    Remove-Item $temp1
-}
-
-# Rename input file to temp file
-if (Test-Path $video) {
-    Rename-Item $video "temp.mp4"
-}
-
 # Pick random sound from $library *.wav, *.mp3, *.ogg, *.m4a, *.flac
 $librarypath = Join-Path $library audio
 $librarypath = Join-Path $librarypath sfx
-$randomSound = Get-ChildItem -Path $librarypath -R -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
-$randomSound = $randomSound.FullName
+$librarypath = Join-Path $librarypath *
+$randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
 # Pick whether or not to mute original audio
 $muteOriginalAudio = Get-Random -Minimum 0 -Maximum 1
 
 # Use original audio if equal to 0
 if ($null -ne $randomSound) {
+    # Delete temp files
+    if (Test-Path $temp1) {
+        Remove-Item $temp1
+    }
+
+    # Rename input file to temp file
+    if (Test-Path $video) {
+        Rename-Item $video "temp.mp4"
+    }
+
+    $randomSound = $randomSound.FullName
     if ($muteOriginalAudio -eq 0) {
         ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
     } else {

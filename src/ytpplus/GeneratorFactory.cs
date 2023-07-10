@@ -657,11 +657,12 @@ namespace YTPPlusPlusPlus
             catch(Exception ex)
             {
                 progressState = ProgressState.Failed;
-                failureReason = ex.Message;
+                failureReason = "Error: Press ~ to view console";
                 progressText = failureReason;
-                ConsoleOutput.WriteLine("An error occurred while generating the video.", Color.Red);
-                ConsoleOutput.WriteLine(ex.Message);
-                ConsoleOutput.WriteLine(ex.StackTrace);
+                ConsoleOutput.WriteLine(ex.Message, Color.Red);
+                ConsoleOutput.WriteLine(ex.StackTrace, Color.Transparent);
+                ConsoleOutput.WriteLine("Is a gyan.dev build of FFmpeg installed?", Color.Yellow);
+                ConsoleOutput.WriteLine("More information was printed to console.txt for troubleshooting.", Color.Yellow);
                 CancelGeneration();
             }
             //CleanUp();

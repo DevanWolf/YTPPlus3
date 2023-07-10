@@ -44,14 +44,16 @@ for ($i = 0; $i -lt 6; $i++) {
 # Pick random sound from $library *.wav, *.mp3, *.ogg, *.m4a, *.flac
 $librarypath = Join-Path $library audio
 $librarypath = Join-Path $librarypath distort
-$randomSound = Get-ChildItem -Path $librarypath -R -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
-$randomSound = $randomSound.FullName
+$librarypath = Join-Path $librarypath *
+$randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
 # Random sound not found?
 if ($null -eq $randomSound) {
     Write-Host "No random sound found."
     exit 0
 }
+
+$randomSound = $randomSound.FullName
 
 # Load options as json
 $optionsjson = Get-Content $options | ConvertFrom-Json

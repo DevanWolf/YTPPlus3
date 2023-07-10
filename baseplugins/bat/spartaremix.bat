@@ -47,7 +47,7 @@ Set PrevCwd=%CD%
 Cd %LIBRARY%audio\spartaremix\
 Set "ExtLst=*.wav,*.mp3,*.ogg,*.m4a,*.flac"
 For /F "Delims=" %%A In ('
-powershell -Nop -C "(Get-ChildItem * -R -File -Incl %ExtLst%|Get-Random).FullName"
+powershell -Nop -C "(Get-ChildItem * -File -Incl %ExtLst%|Get-Random).FullName"
 ') Do Set SFX="%%A"
 Cd %PrevCwd%
 

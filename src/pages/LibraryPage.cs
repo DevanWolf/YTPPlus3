@@ -881,7 +881,7 @@ namespace YTPPlusPlusPlus
                                 LibraryFile file = libraryFileCache[currentLibraryType][position];
                                 if (file.Path != null)
                                 {
-                                    tooltip = Path.GetFileName(file.Path).Replace(".disabled", "");
+                                    tooltip = Path.GetFileName(file.Path).Replace("\\", "/").Replace("disabled/", "");
                                 }
                             }
                             else

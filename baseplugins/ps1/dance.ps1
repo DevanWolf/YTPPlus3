@@ -52,8 +52,8 @@ if (Test-Path $video) {
 # Pick random sound from $library *.wav, *.mp3, *.ogg, *.m4a, *.flac
 $librarypath = Join-Path $library audio
 $librarypath = Join-Path $librarypath music
-$randomSound = Get-ChildItem -Path $librarypath -R -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
-$randomSound = $randomSound.FullName
+$librarypath = Join-Path $librarypath *
+$randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
 # Load options as json
 $optionsjson = Get-Content $options | ConvertFrom-Json
@@ -74,6 +74,7 @@ $useOriginalAudioRoll = Get-Random -Minimum 0 -Maximum 7
 
 # Use original audio if equal to 0
 if (($null -ne $randomSound) -and ($useOriginalAudioRoll -eq 0)) {
+    $randomSound = $randomSound.FullName
     ffmpeg -i "$temp1" -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"
     ffmpeg -i "$temp2" -vf reverse -y "$temp3"
     ffmpeg -i "$temp3" -i "$temp2" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out];[0:a][1:a][0:a][1:a][0:a][1:a][0:a][1:a]concat=n=8:v=0:a=1[out2]" -map "[out]" -map "[out2]" -shortest -y "$video"

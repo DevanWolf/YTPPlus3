@@ -214,8 +214,16 @@ namespace YTPPlusPlusPlus
                     if (file.EndsWith(filetype))
                     {
                         LibraryFile libFile = new LibraryFile(Path.GetFileNameWithoutExtension(file), file, type);
-                        // If path ends in .disabled.*, set enabled to false.
-                        if (libFile.Path.EndsWith(".disabled" + filetype))
+                        // If path contains .disabled, move to disabled folder (update version).
+                        if (libFile.Path.Contains(".disabled"))
+                        {
+                            string newName = Path.GetFileName(libFile.Path).Replace(".disabled", "");
+                            string newPath = Path.Combine(Path.GetDirectoryName(libFile.Path), "disabled", newName);
+                            File.Move(libFile.Path, newPath);
+                            libFile.Path = newPath;
+                        }
+                        // If path is in disabled folder, disable it.
+                        if (libFile.Path.Contains(@"\disabled\"))
                             libFile.Enabled = false;
                         libraryFiles.Add(libFile);
                         break;
@@ -309,7 +317,7 @@ namespace YTPPlusPlusPlus
             {
                 if(libraryFiles[i] == file)
                 {
-                    // Rename the file to .disabled.* if it's being disabled.
+                    // Move to disabled/ if it's being disabled.
                     if(enabled)
                     {
                         if(file.Path == null)
@@ -317,8 +325,12 @@ namespace YTPPlusPlusPlus
                             ConsoleOutput.WriteLine("Cannot enable library file: path is null.", Color.Red);
                             return;
                         }
-                        string ext = Path.GetExtension(file.Path);
-                        string newpath = file.Path.Substring(0, file.Path.Length - ext.Length - 9) + ext;
+                        // Get path before /disabled/
+                        string rootPath = file.Path.Substring(0, file.Path.IndexOf(@"\disabled\"));
+                        string newpath = Path.Combine(rootPath, Path.GetFileName(file.Path));
+                        // If a file already exists in the root path, delete it.
+                        if (File.Exists(newpath))
+                            File.Delete(newpath);
                         try
                         {
                             File.Move(file.Path, newpath);
@@ -337,7 +349,14 @@ namespace YTPPlusPlusPlus
                             ConsoleOutput.WriteLine("Cannot disable library file: path is null.", Color.Red);
                             return;
                         }
-                        string newpath = Path.Combine(Path.GetDirectoryName(file.Path), Path.GetFileNameWithoutExtension(file.Path) + ".disabled" + Path.GetExtension(file.Path));
+                        // Move to disabled/
+                        string newpath = Path.Combine(Path.GetDirectoryName(file.Path), @"disabled\" + Path.GetFileName(file.Path));
+                        // Create disabled/ if it doesn't exist.
+                        if (!Directory.Exists(Path.GetDirectoryName(newpath)))
+                            Directory.CreateDirectory(Path.GetDirectoryName(newpath));
+                        // If a file already exists in disabled/, delete it.
+                        if (File.Exists(newpath))
+                            File.Delete(newpath);
                         try
                         {
                             File.Move(file.Path, newpath);
