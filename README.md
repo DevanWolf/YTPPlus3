@@ -33,7 +33,7 @@ You must have administrator privileges to use this method.
 
 #### Script Details
 
-- [Chocolatey](https://chocolatey.org/) will be used to install the [prerequisites](#prerequisites) automatically.
+- The required [prerequisites](#prerequisites) will be installed automatically.
   - After installation, it is safe to uninstall Chocolatey.
 - YTP+++ will be installed to `C:\YTPPlusPlusPlus`.
 - The script will automatically update YTP+++ to the latest version.
@@ -43,7 +43,7 @@ You must have administrator privileges to use this method.
 
 ### Manual Installation
 
-1. Download and install the [prerequisites](#prerequisites).
+1. Download and install the required [prerequisites](#prerequisites).
 1. Download the latest release from the [releases page](https://github.com/YTP-Plus/YTPPlusPlusPlus/releases).
 1. Extract the zip file to a directory that does not include spaces in the path.
     - For example, `C:\YTPPlusPlusPlus` is a good path, but `C:\Program Files\YTPPlusPlusPlus` is not.
@@ -87,7 +87,7 @@ These software packages are required to run YTP+++. They are not included in the
 
 - Windows
   - YTP+++ is only supported on Windows, but it may be possible to run it on other operating systems with Wine or a similar tool.
-    - Support will not be provided for Wine due to lack of knowledge.
+    - Support will not be provided for Wine.
 - .NET 6 Desktop Runtime
   - Download the .NET Desktop Runtime from [here](https://dotnet.microsoft.com/download/dotnet/6.0/runtime).
     - Please ensure that you download the **Run Desktop Apps** x64 version.
@@ -95,10 +95,6 @@ These software packages are required to run YTP+++. They are not included in the
 - FFmpeg
   - Bundled from v3.1.2 onwards.
   - YTP+++ will only use `.\ffmpeg.exe` and will avoid using the system FFmpeg.
-  - If you would like to update this bundled version, see below:
-    - Download the gyan.dev **essentials** release from [here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z).
-    - Extract the zip file to the YTP+++ installation directory.
-      - When deploying, this is `C:\YTPPlusPlusPlus`.
 
 ### Optional
 
@@ -110,19 +106,6 @@ These software packages are required to run YTP+++. They are not included in the
     - Do not download the dynamic version.
   - Install ImageMagick.
     - Ensure that FFmpeg is *not* selected during installation.
-
-## Adding an Environment Variable
-
-1. Press the Windows key.
-1. Type `Edit the system environment variables` and press enter.
-1. Click on the `Environment Variables...` button.
-1. Select `Path` from the `System variables` list.
-1. Click on the `Edit...` button.
-1. Click on the `New` button.
-1. Type the path containing the executable.
-    - For example, `C:\FFMPEG\bin`.
-1. Click on the `OK` button.
-1. You may need to restart your computer for the changes to take effect.
 
 ## Building
 
@@ -137,10 +120,6 @@ However, you can also build it with Visual Studio 2019.
 1. Open the project folder in Visual Studio Code.
 1. Open the command palette (Ctrl+Shift+P).
 1. Type `.NET: Restore Project` and press enter.
-1. Select `YTP+++.csproj` from the list if prompted.
-1. Open the command palette (Ctrl+Shift+P).
-1. Type `.NET: Generate Assets for Build and Debug` and press enter.
-    - Alternatively, try Ctrl+Shift+B. This may not function if the CMake Tools extension is installed.
 1. Select `YTP+++.csproj` from the list if prompted.
 1. YTP+++ may be launched by pressing F5 or executing `YTP+++.exe` in the `bin/Debug/net6.0-windows/` directory.
 
