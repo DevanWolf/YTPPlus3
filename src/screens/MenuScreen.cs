@@ -18,7 +18,7 @@ namespace YTPPlusPlusPlus
         /// The title of the screen. This is displayed on the header bar.
         /// </summary>
         public string title { get; } = "Main Menu";
-        public int layer { get; } = 5;
+        public int layer { get; } = 6;
         public ScreenType screenType { get; set; } = ScreenType.Hidden;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = false;

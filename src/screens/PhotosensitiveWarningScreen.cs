@@ -50,7 +50,7 @@ namespace YTPPlusPlusPlus
             "WARNING:",
             "A very small percentage of people may experience a seizure",
             "when exposed to certain visual images, including flashing",
-            "lights or patterns that may appear during usage of YTP+++.",
+            "lights or patterns that may appear in generated content.",
             " ",
             "When using YTP+++, please be aware of",
             "this and take any necessary precautions.",
@@ -109,7 +109,6 @@ namespace YTPPlusPlusPlus
                             timeText = gameTime.TotalGameTime.TotalMilliseconds;
                         }
                     }
-                    lastTextOpacity = (int)(Math.Sin((gameTime.TotalGameTime.TotalMilliseconds - timeText) / 100) * 128 + 128);
                     if(handleInput)
                     {
                         if (MouseInput.MouseState.LeftButton == ButtonState.Pressed && MouseInput.LastMouseState.LeftButton == ButtonState.Released)
@@ -133,10 +132,13 @@ namespace YTPPlusPlusPlus
                     ScreenManager.PushNavigation("Content");
                     ScreenManager.PushNavigation("Video");
                     ScreenManager.PushNavigation("Background");
+                    ScreenManager.PushNavigation("Socials");
                     ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
                     ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Show();
                     ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
                     ScreenManager.GetScreen<BackgroundScreen>("Background")?.Show();
+                    ScreenManager.GetScreen<HeaderScreen>("Header")?.Show();
+                    ScreenManager.GetScreen<SocialScreen>("Socials")?.Show();
                     overlayOpacity = 255;
                     updateWorker = new BackgroundWorker();
                     updateWorker.DoWork += UpdateCheckThread;

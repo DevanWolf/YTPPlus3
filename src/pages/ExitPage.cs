@@ -25,6 +25,7 @@ namespace YTPPlusPlusPlus
                 ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
                 ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
                 ScreenManager.GetScreen<HeaderScreen>("Header")?.Hide();
+                ScreenManager.GetScreen<SocialScreen>("Socials")?.Hide();
             }
             // Interactable
             if(controller.Update(gameTime, handleInput))

@@ -20,7 +20,7 @@ namespace YTPPlusPlusPlus
         /// The title of the screen. This is displayed on the header bar.
         /// </summary>
         public string title { get; } = "Initial Setup";
-        public int layer { get; } = 6;
+        public int layer { get; } = 7;
         public ScreenType screenType { get; set; } = ScreenType.Hidden;
         public int currentPlacement { get; set; } = -1;
         private bool hiding = false;
@@ -352,6 +352,8 @@ namespace YTPPlusPlusPlus
                 ScreenManager.GetScreen<VideoScreen>("Video")?.Show();
                 ScreenManager.PushNavigation("Content");
                 ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
+                ScreenManager.PushNavigation("Socials");
+                ScreenManager.GetScreen<SocialScreen>("Socials")?.Show();
             }
             else
             {

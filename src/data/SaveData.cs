@@ -38,6 +38,7 @@ namespace YTPPlusPlusPlus
             {"OverlaysEnabled", "false"},
             {"AddToLibrary", "true"},
             {"AprilFoolsFlappyBirdScore", "0"},
+            {"TennisScore", "0"},
             {"MusicVolume", "100"},
             {"SoundEffectVolume", "100"},
             {"ActiveMusic", "1"},

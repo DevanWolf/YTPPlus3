@@ -176,7 +176,7 @@ namespace YTPPlusPlusPlus
                 {
                     case 2: // left click
                         advanced = false;
-                        if(int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) >= Global.tennisScore)
+                        if(int.Parse(SaveData.saveValues["TennisScore"]) >= Global.tennisScore)
                         {
                             Global.tennisMode = true;
                             GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);

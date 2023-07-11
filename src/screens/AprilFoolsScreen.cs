@@ -278,6 +278,8 @@ namespace YTPPlusPlusPlus
                 ScreenManager.GetScreen<ContentScreen>("Content")?.Show();
                 ScreenManager.PushNavigation("Header");
                 ScreenManager.GetScreen<HeaderScreen>("Header")?.Show();
+                ScreenManager.PushNavigation("Socials");
+                ScreenManager.GetScreen<SocialScreen>("Socials")?.Show();
                 return true;
             }
             // Query obstacles so player can collide with them
@@ -306,19 +308,13 @@ namespace YTPPlusPlusPlus
                         GlobalContent.GetSound("AddSource").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                         player.points++;
                         currentCredit++;
-                        if(player.points == Global.tennisScore)
-                        {
-                            // unlock tennis mode and play sound
-                            GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                            Global.justCompletedRender = true; // not sure if this is a good time to call it, it could be in the middle of a render
-                            Global.tennisMode = true;
-                        }
                         if(currentCredit > creditRoll.Count-1)
                         {
                             currentCredit = 1;
                         }
                         if(player.points > highScore)
                         {
+                            GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                             highScore = player.points;
                             SaveData.saveValues["AprilFoolsFlappyBirdScore"] = highScore.ToString();
                             SaveData.Save();
@@ -423,8 +419,8 @@ namespace YTPPlusPlusPlus
             SpriteFont font = GlobalContent.GetFont("MunroSmall");
             Vector2 textSize = font.MeasureString(player.points.ToString());
             // Center horizontally
-            spriteBatch.DrawString(font, player.points.ToString(), new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2) + GlobalGraphics.Scale(1), GlobalGraphics.Scale(16+16) + GlobalGraphics.Scale(1)), Color.Black);
-            spriteBatch.DrawString(font, player.points.ToString(), new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2), GlobalGraphics.Scale(16+16)), Color.White);
+            spriteBatch.DrawString(font, player.points.ToString(), new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2) + GlobalGraphics.Scale(1), GlobalGraphics.Scale(16+16+8) + GlobalGraphics.Scale(1)), Color.Black);
+            spriteBatch.DrawString(font, player.points.ToString(), new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2), GlobalGraphics.Scale(16+16+8)), Color.White);
             // Draw high score
             textSize = font.MeasureString(highScore.ToString());
             // Center horizontally
@@ -433,8 +429,8 @@ namespace YTPPlusPlusPlus
             // Draw score text
             textSize = font.MeasureString("Score");
             // Center horizontally
-            spriteBatch.DrawString(font, "Score", new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2) + GlobalGraphics.Scale(1), GlobalGraphics.Scale(8+16) + GlobalGraphics.Scale(1)), Color.Black);
-            spriteBatch.DrawString(font, "Score", new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2), GlobalGraphics.Scale(8+16)), Color.White);
+            spriteBatch.DrawString(font, "Score", new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2) + GlobalGraphics.Scale(1), GlobalGraphics.Scale(8+16+8) + GlobalGraphics.Scale(1)), Color.Black);
+            spriteBatch.DrawString(font, "Score", new Vector2(GlobalGraphics.Scale(160) - (textSize.X / 2), GlobalGraphics.Scale(8+16+8)), Color.White);
             // Draw high score text
             textSize = font.MeasureString("High Score");
             // Center horizontally

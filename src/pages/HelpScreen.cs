@@ -51,6 +51,7 @@ namespace YTPPlusPlusPlus
                         ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
                         ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
                         ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
+                        ScreenManager.GetScreen<SocialScreen>("Socials")?.Hide();
                         return true;
                 }
                 return false;

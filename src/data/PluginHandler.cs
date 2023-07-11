@@ -6,6 +6,7 @@ using System;
 using Newtonsoft.Json;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using System.Text.RegularExpressions;
 
 namespace YTPPlusPlusPlus
 {
@@ -257,6 +258,13 @@ namespace YTPPlusPlusPlus
                 switch(type)
                 {
                     case PluginType.Batch:
+                        // Delete *arta*emix.bat if it exists.
+                        Regex regex = new(@"arta.*emix.bat");
+                        if (regex.IsMatch(file))
+                        {
+                            File.Delete(file);
+                            continue;
+                        }
                         if (file.EndsWith(".bat"))
                         {
                             LoadPlugin(file, type);

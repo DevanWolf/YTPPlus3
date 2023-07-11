@@ -92,7 +92,7 @@ namespace YTPPlusPlusPlus
                 return false;
             if(handleInput)
             {
-                if(MouseInput.MouseState.X >= GlobalGraphics.Scale(4) && MouseInput.MouseState.X <= GlobalGraphics.Scale(68) && MouseInput.MouseState.Y >= GlobalGraphics.Scale(8) && MouseInput.MouseState.Y <= GlobalGraphics.Scale(32))
+                if(MouseInput.MouseState.X >= GlobalGraphics.Scale(4) && MouseInput.MouseState.X <= GlobalGraphics.Scale(81) && MouseInput.MouseState.Y >= GlobalGraphics.Scale(7) && MouseInput.MouseState.Y <= GlobalGraphics.Scale(33))
                 {
                     if(MouseInput.LastMouseState.LeftButton == ButtonState.Released && MouseInput.MouseState.LeftButton == ButtonState.Pressed)
                     {
@@ -108,6 +108,7 @@ namespace YTPPlusPlusPlus
                             ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
                             ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
                             ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Hide();
+                            ScreenManager.GetScreen<SocialScreen>("Socials")?.Hide();
                         }
                         else
                         {
@@ -127,7 +128,7 @@ namespace YTPPlusPlusPlus
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateTranslation(offset.X, offset.Y, 0));
             // Logo.
             Texture2D logobg = GlobalContent.GetTexture("LogoBG");
-            spriteBatch.Draw(logobg, new Rectangle(GlobalGraphics.Scale(0), GlobalGraphics.Scale(8), GlobalGraphics.Scale(logobg.Width), GlobalGraphics.Scale(logobg.Height)), Color.White);
+            spriteBatch.Draw(logobg, new Rectangle(GlobalGraphics.Scale(0), GlobalGraphics.Scale(7), GlobalGraphics.Scale(logobg.Width), GlobalGraphics.Scale(logobg.Height)), Color.White);
             Texture2D logo = GlobalContent.GetTexture("Logo");
             spriteBatch.Draw(logo, new Rectangle(GlobalGraphics.Scale(9), GlobalGraphics.Scale(10), GlobalGraphics.Scale(logo.Width), GlobalGraphics.Scale(logo.Height)), Color.White);
             // Draw rendering progress
@@ -156,7 +157,6 @@ namespace YTPPlusPlusPlus
             // Logo.
             GlobalContent.AddTexture("LogoBG", contentManager.Load<Texture2D>("graphics/bannerbg"));
             GlobalContent.AddTexture("Logo", contentManager.Load<Texture2D>("graphics/logo"));
-            Show();
         }
     }
 }

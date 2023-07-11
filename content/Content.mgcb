@@ -1069,6 +1069,18 @@
 /processorParam:TextureFormat=Color
 /build:graphics/progressbg.png
 
+#begin graphics/socialscreen.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:graphics/socialscreen.png
+
 #begin graphics/tile.png
 /importer:TextureImporter
 /processor:TextureProcessor

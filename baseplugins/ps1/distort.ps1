@@ -78,7 +78,7 @@ $distort5 = Join-Path $temp distort5.png
 $concatdistort = Join-Path $temp concatdistort.txt
 
 # Create black frame
-if (Get-Command magicck -ErrorAction SilentlyContinue) {
+if (Get-Command magick -ErrorAction SilentlyContinue) {
     magick convert -size $width"x"$height canvas:black $black
 } else {
     # Use FFmpeg to create black frame
@@ -89,7 +89,7 @@ if (Get-Command magicck -ErrorAction SilentlyContinue) {
 ffmpeg -i $video -ss 0 -update 1 -q:v 1 -y $distort0
 
 # Apply effect 5 times
-if (Get-Command magicck -ErrorAction SilentlyContinue) {
+if (Get-Command magick -ErrorAction SilentlyContinue) {
     for ($i = 1; $i -lt 6; $i++) {
         $effect = Get-Random -Minimum 0 -Maximum 8
         $command = ""

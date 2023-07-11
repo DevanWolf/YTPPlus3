@@ -34,7 +34,6 @@ You must have administrator privileges to use this method.
 #### Script Details
 
 - The required [prerequisites](#prerequisites) will be installed automatically.
-  - After installation, it is safe to uninstall Chocolatey.
 - YTP+++ will be installed to `C:\YTPPlusPlusPlus`.
 - The script will automatically update YTP+++ to the latest version.
 - Shortcuts will be created on the desktop and in the start menu.

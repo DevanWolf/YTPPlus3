@@ -198,7 +198,7 @@ namespace YTPPlusPlusPlus
                 for (int i = 0; i < libraryTypes[currentRootType].Count; i++)
                 {
                     // make sure it exists in rects
-                    if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                    if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                         continue;
                     spriteBatch.Draw(subTypeButton, rects[currentRootType.ToString() + libraryTypes[currentRootType][i] + "Button"], Color.White);
                 }
@@ -222,7 +222,7 @@ namespace YTPPlusPlusPlus
                     if((selectedFlags & (8 << i)) == (8 << i))
                     {
                         // make sure it exists in rects
-                        if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                        if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                             continue;
                         spriteBatch.Draw(subTypeButtonSelected, rects[currentRootType.ToString() + libraryTypes[currentRootType][i] + "Button"], Color.White);
                     }
@@ -258,7 +258,7 @@ namespace YTPPlusPlusPlus
             for (int i = 0; i < libraryTypes[currentRootType].Count; i++)
             {
                 // make sure it exists in rects
-                if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                 {
                     offset -= 13;
                     continue;
@@ -406,7 +406,7 @@ namespace YTPPlusPlusPlus
                     for(int i = 0; i < libraryTypes[type].Count; i++)
                     {
                         // hardcoded: tennis
-                        if(libraryTypes[type][i] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                        if(libraryTypes[type][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                         {
                             // offset one and skip
                             offset = -13;
@@ -685,7 +685,7 @@ namespace YTPPlusPlusPlus
                                     for(int s = 0; s < libraryTypes[currentRootType].Count; s++)
                                     {
                                         // make sure it exists in rects
-                                        if(libraryTypes[currentRootType][s] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                                        if(libraryTypes[currentRootType][s] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                                         {
                                             offset -= 13;
                                             continue;
@@ -699,7 +699,7 @@ namespace YTPPlusPlusPlus
                                                 Vector2 mousePosition = MouseInput.MouseState.Position.ToVector2();
                                                 for (int i = 0; i < libraryTypes[currentRootType].Count; i++)
                                                 {
-                                                    if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["AprilFoolsFlappyBirdScore"]) < Global.tennisScore)
+                                                    if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
                                                     {
                                                         mousePosition.Y += GlobalGraphics.Scale(13);
                                                         continue;
