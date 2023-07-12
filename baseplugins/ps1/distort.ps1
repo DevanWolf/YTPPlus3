@@ -27,6 +27,7 @@ $sources = $args[9]
 $music = $args[10]
 $library = $args[11]
 $options = $args[12]
+$settingcount = $args[13]
 
 # Delete distort files
 for ($i = 0; $i -lt 6; $i++) {
@@ -43,16 +44,11 @@ $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.o
 
 # Make randomsound "" if it doesn't exist
 if ($null -eq $randomSound) {
-    $randomSound = ".\.null"
-}
-else {
-    $randomSound = $randomSound.FullName
-}
-
-# Random sound not found?
-if (-not (Test-Path $randomSound)) {
     Write-Host "No random sound found."
     exit 0
+}
+else {
+    $randomSound = $randomSound.FullName.Trim('"')
 }
 
 # Load options as json
@@ -86,7 +82,7 @@ if (Get-Command magick -ErrorAction SilentlyContinue) {
 }
 
 # Create one frame from video
-ffmpeg -i $video -ss 0 -update 1 -q:v 1 -y $distort0
+.\ffmpeg.exe -i $video -ss 0 -update 1 -q:v 1 -y $distort0
 
 # Apply effect 5 times
 if (Get-Command magick -ErrorAction SilentlyContinue) {
@@ -122,7 +118,7 @@ else {
             6 {$command = "-vf negate"}
             7 {$command = ""}
         }
-        $ffmpegexec = "ffmpeg -i $distort0 $command -frames:v 1 -y $distort$i.png"
+        $ffmpegexec = ".\ffmpeg.exe -i $distort0 $command -frames:v 1 -y $distort$i.png"
         Invoke-Expression $ffmpegexec
     }
 }

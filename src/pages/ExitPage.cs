@@ -9,7 +9,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public class ExitPage : IPage
     {
-        public string Name { get; } = "Exit";
+        public string Name { get; set; } = "Exit";
         public string Tooltip { get; } = "Exit the application.";
         private readonly InteractableController controller = new();
         public bool Update(GameTime gameTime, bool handleInput)

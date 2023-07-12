@@ -27,6 +27,7 @@ $sources = $args[9]
 $music = $args[10]
 $library = $args[11]
 $options = $args[12]
+$settingcount = $args[13]
 
 # Temp files
 $temp1 = Join-Path $temp "temp.mp4"
@@ -59,37 +60,37 @@ if ($mirrorVerticalOrHorizontal -eq 0) {
     # hflip
     if ($mirrorSide -eq 0) {
         # Crop video to half width (temp2)
-        ffmpeg -i "$temp1" -filter:v "crop=in_w/2:in_h:0:0" -c:a copy -y "$temp2"
+        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w/2:in_h:0:0" -c:a copy -y "$temp2"
         # Mirror video (temp3)
-        ffmpeg -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
+        .\ffmpeg.exe -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
         # Combine videos
-        ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
     }
     else {
         # Crop video to half width panned to right side (temp2)
-        ffmpeg -i "$temp1" -filter:v "crop=in_w/2:in_h:in_w/2:0" -c:a copy -y "$temp2"
+        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w/2:in_h:in_w/2:0" -c:a copy -y "$temp2"
         # Mirror video (temp3)
-        ffmpeg -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
+        .\ffmpeg.exe -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
         # Combine videos
-        ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
     }
 }
 else {
     # vflip
     if ($mirrorSide -eq 0) {
         # Crop video to half height (temp2)
-        ffmpeg -i "$temp1" -filter:v "crop=in_w:in_h/2:0:0" -c:a copy -y "$temp2"
+        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w:in_h/2:0:0" -c:a copy -y "$temp2"
         # Mirror video (temp3)
-        ffmpeg -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
+        .\ffmpeg.exe -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
         # Combine videos
-        ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
     }
     else {
         # Crop video to half height panned to bottom side (temp2)
-        ffmpeg -i "$temp1" -filter:v "crop=in_w:in_h/2:0:in_h/2" -c:a copy -y "$temp2"
+        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w:in_h/2:0:in_h/2" -c:a copy -y "$temp2"
         # Mirror video (temp3)
-        ffmpeg -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
+        .\ffmpeg.exe -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
         # Combine videos
-        ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
     }
 }

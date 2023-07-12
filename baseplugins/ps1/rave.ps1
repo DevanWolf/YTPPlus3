@@ -27,6 +27,7 @@ $sources = $args[9]
 $music = $args[10]
 $library = $args[11]
 $options = $args[12]
+$settingcount = $args[13]
 
 # Temp files
 $temp1 = Join-Path $temp "temp.mp4"
@@ -48,15 +49,12 @@ $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
 # Make randomsound "" if it doesn't exist
-if ($null -eq $randomSound) {
-    $randomSound = ".\.null"
-}
-else {
-    $randomSound = $randomSound.FullName
+if ($null -ne $randomSound) {
+    $randomSound = $randomSound.FullName.Trim('"')
 }
 
 # Create frames directory
-if (-not (Test-Path $frames)) {
+if (-not (Test-Path "$frames")) {
     New-Item -Path $frames -ItemType Directory
 }
 
@@ -83,7 +81,7 @@ Pop-Location
 .\ffmpeg.exe -framerate 30 -i $frames\_%0d.png -i $temp1 -map 0:v -map 1:a -c:v libx264 -crf 18 -preset veryfast -y $temp2
 
 # Finalize
-if(-not (Test-Path $randomSound)) {
+if ($null -eq $randomSound) {
     .\ffmpeg.exe -i $temp2 -filter_complex "[0:v]setpts=0.75*PTS[f];[0:v]setpts=0.5*PTS,reverse[fr];[f][fr]concat=n=2:v=1:a=0,format=yuv420p[v];[0:a]atempo=2.0[a1];[0:a]atempo=0.75,areverse[a2];[a1][a2]concat=n=2:v=0:a=1[a]" -map "[v]" -map "[a]" -shortest -y $video
 }
 else {

@@ -11,7 +11,6 @@ namespace YTPPlusPlusPlus
     /// This class handles data saving and loading.
     /// All data stored here are default values.
     /// </summary>
-    [Serializable]
     public static class SaveData
     {
         public static Dictionary<string, string> saveValues = new Dictionary<string, string>()
@@ -21,17 +20,11 @@ namespace YTPPlusPlusPlus
             {"ScreenScale", "2"}, // 1 - 4 ONLY!
             {"BackgroundSaturation", "0"},
             {"ProjectTitle", "Result"},
-            {"ProjectAuthor", "Unknown"},
-            {"PluginTest", ""},
-            {"RandomSeed", "0"},
             {"MinStreamDuration", "0.2"},
             {"MaxStreamDuration", "0.4"},
-            {"MinTransitionDuration", "0.2"},
-            {"MaxTransitionDuration", "0.4"},
             {"MaxClipCount", "20"},
             {"VideoWidth", "640"},
             {"VideoHeight", "480"},
-            {"PluginTestEnabled", "false"},
             {"TransitionsEnabled", "false"},
             {"IntrosEnabled", "false"},
             {"OutrosEnabled", "false"},

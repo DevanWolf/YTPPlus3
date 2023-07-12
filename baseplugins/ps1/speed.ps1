@@ -27,6 +27,7 @@ $sources = $args[9]
 $music = $args[10]
 $library = $args[11]
 $options = $args[12]
+$settingcount = $args[13]
 
 # Temp files
 $temp1 = Join-Path $temp "temp.mp4"

@@ -39,6 +39,11 @@ namespace YTPPlusPlusPlus
             {
                 ScreenManager.PushNavigation("Initial Setup");
                 ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Show();
+                ScreenManager.GetScreen<ContentScreen>("Content")?.Hide();
+                ScreenManager.GetScreen<MenuScreen>("Main Menu")?.Hide();
+                ScreenManager.GetScreen<VideoScreen>("Video")?.Hide();
+                ScreenManager.GetScreen<BackgroundScreen>("Background")?.Hide();
+                ScreenManager.GetScreen<SocialScreen>("Socials")?.Hide();
                 GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
             }
             // Dispose of worker

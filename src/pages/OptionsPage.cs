@@ -9,7 +9,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public class OptionsPage : IPage
     {
-        public string Name { get; } = "Options";
+        public string Name { get; set; } = "Options";
         public string Tooltip { get; } = "Change application settings.";
         private readonly InteractableController controller = new();
         public bool Update(GameTime gameTime, bool handleInput)

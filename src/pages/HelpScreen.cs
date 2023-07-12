@@ -9,7 +9,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public class HelpPage : IPage
     {
-        public string Name { get; } = "Help";
+        public string Name { get; set; } = "Help";
         public string Tooltip { get; } = "Access help and re-visit the initial setup.";
         private readonly InteractableController controller = new();
         public bool Update(GameTime gameTime, bool handleInput)

@@ -9,7 +9,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public interface IPage : IObject
     {
-        public string Name { get; }
+        public string Name { get; set; }
         public string Tooltip { get; }
     }
     /// <summary>

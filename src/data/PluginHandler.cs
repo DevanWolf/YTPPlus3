@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
 namespace YTPPlusPlusPlus
 {
@@ -31,6 +32,9 @@ namespace YTPPlusPlusPlus
         public string path { get; set; }
         public PluginType type { get; set; }
         public bool enabled { get; set; }
+        public List<LibraryType> libraryTypes = new List<LibraryType>();
+        public Dictionary<string, object> settings = new();
+        public Dictionary<string, string> settingTooltips = new();
         public Plugin(string path, PluginType type, bool enabled = true)
         {
             this.path = path;
@@ -115,7 +119,14 @@ namespace YTPPlusPlusPlus
                         @".\" +Path.Join("library", "audio", "music") + @"\",
                         @".\library\",
                         SaveData.saveFileName, // powershell plugins can access the JSON save file
+                        settings.Count.ToString(), // number of settings
                     };
+                    // Add settings to args
+                    foreach (KeyValuePair<string, object> setting in settings)
+                    {
+                        psArgs.Add(setting.Key);
+                        psArgs.Add(setting.Value.ToString());
+                    }
                     string psArgsString = string.Join(" ", psArgs);
                     ProcessStartInfo psStartInfo = new()
                     {
@@ -154,6 +165,11 @@ namespace YTPPlusPlusPlus
         }
         public bool Query()
         {
+            // Query for batch plugins is deprecated.
+            if (type == PluginType.Batch)
+            {
+                return true;
+            }
             // Call plugin with query argument.
             string fileName = path;
             List<string> batchArgs = new();
@@ -201,8 +217,12 @@ namespace YTPPlusPlusPlus
                 return false;
             }
             // Parse output.
-            output = output.Replace("\r", "").Replace("\n", "");
-            string[] query = output.Split(';');
+            string[] outputarray = output.Replace("\r", "").Replace("\n", "").Split("|");
+            if(outputarray.Length < 1)
+            {
+                return true; // no query results
+            }
+            string[] query = outputarray[0].Split(';');
             int count = 0;
             for(int i = 0; i < query.Length; i++)
             {
@@ -224,6 +244,7 @@ namespace YTPPlusPlusPlus
                 LibraryData.libraryPaths.Add(dummyType, libPath);
                 LibraryData.libraryFileTypes.Add(dummyType, fileExts);
                 LibraryData.libraryNames.Add(dummyType, split[1].Replace("_", " "));
+                libraryTypes.Add(dummyType);
                 Global.justCompletedRender = true; // demand a refresh
                 // Print to console.
                 ConsoleOutput.WriteLine($"Added {(rootType == LibraryRootType.Video ? "video" : "audio")} library {split[1]} from plugin {Path.GetFileName(path)}.", Color.LightBlue);
@@ -232,6 +253,31 @@ namespace YTPPlusPlusPlus
             // Print count
             if (count > 0)
                 ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} added {count} libraries.", Color.LightBlue);
+            // Library query successful, check for settings query.
+            if (outputarray.Length < 2)
+            {
+                return true; // no settings query results
+            }
+            // Format: setting_name:default_setting_value:tooltip;setting_name:default_setting_value:tooltip
+            string[] settingsQuery = outputarray[1].Split(';');
+            count = 0;
+            for(int i = 0; i < settingsQuery.Length; i++)
+            {
+                string[] split = settingsQuery[i].Split(':');
+                if (split.Length < 2)
+                {
+                    continue;
+                }
+                string settingName = split[0];
+                string settingValue = split[1];
+                string settingTooltip = split.Length >= 3 ? split[2] : "";
+                settings.Add(settingName, settingValue);
+                settingTooltips.Add(settingName, settingTooltip);
+                count++;
+            }
+            // Print count
+            if (count > 0)
+                ConsoleOutput.WriteLine($"Plugin {Path.GetFileName(path)} added {count} settings.", Color.LightBlue);
             return true;
         }
     }
@@ -240,8 +286,59 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public static class PluginHandler
     {
-        private readonly static List<Plugin> plugins = new();
+        public static List<Plugin> plugins = new();
         private static string pluginPath = @".\plugins";
+        private static string pluginSettingsPath = @".\PluginSettings.json";
+        public static void LoadPluginSettings()
+        {
+            if (!File.Exists(pluginSettingsPath))
+            {
+                // Create empty settings file.
+                File.WriteAllText(pluginSettingsPath, "{}");
+            }
+            // {"pluginname.ps1": {"settings": {"settingname": "settingvalue"}, "disabled": false}}
+            Dictionary<string, Dictionary<string, object>>? pluginSettings = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(File.ReadAllText(pluginSettingsPath));
+            if (pluginSettings == null)
+            {
+                // Delete invalid settings file.
+                File.Delete(pluginSettingsPath);
+                LoadPluginSettings();
+                return;
+            }
+            foreach(KeyValuePair<string, Dictionary<string, object>> pluginSetting in pluginSettings)
+            {
+                string pluginName = pluginSetting.Key;
+                int index = plugins.FindIndex(plugin => Path.GetFileName(plugin.path) == pluginName);
+                if (index == -1)
+                    continue;
+                Plugin plugin = plugins[index];
+                Dictionary<string, object>? settings = JsonConvert.DeserializeObject<Dictionary<string, object>>(pluginSetting.Value["settings"].ToString());
+                foreach(KeyValuePair<string, object> setting in settings)
+                {
+                    ConsoleOutput.WriteLine($"Setting {setting.Key} to {setting.Value} for plugin {pluginName}...", Color.LightBlue);
+                    if(!plugin.settings.ContainsKey(setting.Key))
+                    {
+                        ConsoleOutput.WriteLine($"Setting {setting.Key} not found for plugin {pluginName}.", Color.Red);
+                        continue;
+                    }
+                    plugin.settings[setting.Key] = setting.Value;
+                }
+                plugin.enabled = !(pluginSetting.Value["disabled"] as bool? ?? false);
+            }
+            SavePluginSettings();
+        }
+        public static void SavePluginSettings()
+        {
+            Dictionary<string, Dictionary<string, object>> pluginSettings = new();
+            foreach(Plugin plugin in plugins)
+            {
+                Dictionary<string, object> pluginSetting = new();
+                pluginSetting.Add("settings", plugin.settings);
+                pluginSetting.Add("disabled", !plugin.enabled);
+                pluginSettings.Add(Path.GetFileName(plugin.path), pluginSetting);
+            }
+            File.WriteAllText(pluginSettingsPath, JsonConvert.SerializeObject(pluginSettings, Formatting.Indented));
+        }
         public static void LoadPlugin(string path, PluginType type)
         {
             Plugin plugin = new(path, type);
@@ -249,6 +346,24 @@ namespace YTPPlusPlusPlus
             if(!plugin.Query())
                 throw new Exception($"Failed to query plugin {Path.GetFileName(path)}.");
             plugins.Add(plugin);
+            // Add entry to pluginsettings if it doesn't exist.
+            Dictionary<string, object> pluginSettings = new();
+            pluginSettings.Add("settings", plugin.settings);
+            pluginSettings.Add("disabled", !plugin.enabled);
+            if (!File.Exists(pluginSettingsPath))
+            {
+                // Create empty settings file.
+                File.WriteAllText(pluginSettingsPath, "{}");
+            }
+            Dictionary<string, Dictionary<string, object>>? existingPluginSettings = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(File.ReadAllText(pluginSettingsPath));
+            if (existingPluginSettings != null)
+            {
+                if (!existingPluginSettings.ContainsKey(Path.GetFileName(path)))
+                {
+                    existingPluginSettings.Add(Path.GetFileName(path), pluginSettings);
+                    File.WriteAllText(pluginSettingsPath, JsonConvert.SerializeObject(existingPluginSettings, Formatting.Indented));
+                }
+            }
             ConsoleOutput.WriteLine($"Loaded plugin {Path.GetFileName(path)}.", Color.LightBlue);
         }
         private static void LoadPluginsRecursive(string path, PluginType type)
@@ -330,6 +445,7 @@ namespace YTPPlusPlusPlus
                     LoadPluginsRecursive(file, type);
                     count += plugins.Count;
                 }
+                LoadPluginSettings();
                 Global.generatorFactory.progressText = $"{count} plugins, check console for details.";
                 Global.canRender = true;
             }
@@ -350,16 +466,9 @@ namespace YTPPlusPlusPlus
                     pluginName = "",
                 };
             }
-            // Pick a random plugin.
-            Plugin plugin = plugins[rnd.Next(plugins.Count)];
-            // Call the plugin.
-            return plugin.Call(video);
-        }
-        public static PluginReturnValue PickNamed(string name, string video)
-        {
-            // Find the plugin.
-            Plugin? plugin = plugins.Find(x => Path.GetFileName(x.path) == name);
-            if (plugin == null)
+            // Pick a random plugin that isn't disabled.
+            List<Plugin> enabledPlugins = plugins.FindAll(plugin => plugin.enabled);
+            if(enabledPlugins.Count == 0)
             {
                 return new PluginReturnValue()
                 {
@@ -367,6 +476,7 @@ namespace YTPPlusPlusPlus
                     pluginName = "",
                 };
             }
+            Plugin plugin = enabledPlugins[rnd.Next(enabledPlugins.Count)];
             // Call the plugin.
             return plugin.Call(video);
         }

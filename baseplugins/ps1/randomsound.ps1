@@ -27,6 +27,7 @@ $sources = $args[9]
 $music = $args[10]
 $library = $args[11]
 $options = $args[12]
+$settingcount = $args[13]
 
 # Temp files
 $temp1 = Join-Path $temp "temp.mp4"
@@ -37,19 +38,13 @@ $librarypath = Join-Path $librarypath sfx
 $librarypath = Join-Path $librarypath *
 $randomSound = Get-ChildItem -Path $librarypath -File -Include *.wav, *.mp3, *.ogg, *.m4a, *.flac | Get-Random
 
-# Make randomsound "" if it doesn't exist
-if ($null -eq $randomSound) {
-    $randomSound = ".\.null"
-}
-else {
-    $randomSound = $randomSound.FullName
-}
-
-# Pick whether or not to mute original audio
-$muteOriginalAudio = Get-Random -Minimum 0 -Maximum 1
-
 # Apply random sound
-if (Test-Path $randomSound) {
+if ($null -ne $randomSound) {
+    $randomSound = $randomSound.FullName.Trim('"')
+
+    # Pick whether or not to mute original audio
+    $muteOriginalAudio = Get-Random -Minimum 0 -Maximum 1
+
     # Delete temp files
     if (Test-Path $temp1) {
         Remove-Item $temp1

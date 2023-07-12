@@ -95,7 +95,7 @@ namespace YTPPlusPlusPlus
             }
             // Load all screens.
             ScreenManager.LoadScreens();
-            ConsoleOutput.WriteLine("Initialization complete.", Color.Green);
+            ConsoleOutput.WriteLine("Initialization complete for v" + Global.productVersion + ".");
             base.Initialize();
         }
         protected override void LoadContent()

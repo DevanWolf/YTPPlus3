@@ -9,7 +9,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public class GeneratePage : IPage
     {
-        public string Name { get; } = "Generate";
+        public string Name { get; set; } = "Generate";
         public string Tooltip { get; } = "Render a nonsensical video.";
         private readonly InteractableController controller = new();
         private readonly InteractableController controllerAdvanced = new();

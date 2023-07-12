@@ -123,6 +123,10 @@ namespace YTPPlusPlusPlus
         {
             GlobalContent.AddTexture("InteractiveTextEntrySide", contentManager.Load<Texture2D>("graphics/interactivetextentryside"));
             GlobalContent.AddTexture("InteractiveTextEntryInner", contentManager.Load<Texture2D>("graphics/interactivetextentryinner"));
+            Register();
+        }
+        public void Register()
+        {
             GameWindow? window = UserInterface.instance?.Window;
             if (window != null)
             {

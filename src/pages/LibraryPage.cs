@@ -20,7 +20,7 @@ namespace YTPPlusPlusPlus
     /// </summary>
     public class LibraryPage : IPage
     {
-        public string Name { get; } = "Library";
+        public string Name { get; set; } = "Library";
         public string Tooltip { get; } = "View imported media and previous renders.";
         private readonly InteractableController controller = new();
         private readonly Dictionary<string, Rectangle> rects = new();
