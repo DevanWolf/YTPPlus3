@@ -9,7 +9,7 @@ if ($args.Length -eq 1 -and $args[0] -eq "query") {
 # Check command line args
 if ($args.Length -lt 13) {
     Write-Host "This is a YTP+++ plugin."
-    Write-Host "Usage: distort.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options>"
+    Write-Host "Usage: distort.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options> <settingcount> [<settingname> <settingvalue> ... ...]"
     exit 1
 }
 
@@ -51,17 +51,6 @@ else {
     $randomSound = $randomSound.FullName.Trim('"')
 }
 
-# Load options as json
-$optionsjson = Get-Content $options | ConvertFrom-Json
-
-# Get stream duration from options
-$minStreamDuration = $optionsjson.MinStreamDuration
-$maxStreamDuration = $optionsjson.MaxStreamDuration
-
-# Parse as float
-$minStreamDuration = [float]$minStreamDuration
-$maxStreamDuration = [float]$maxStreamDuration
-
 # Set distorts
 $black = Join-Path $temp black.png
 $distort = Join-Path $temp distort
@@ -82,7 +71,7 @@ if (Get-Command magick -ErrorAction SilentlyContinue) {
 }
 
 # Create one frame from video
-.\ffmpeg.exe -i $video -ss 0 -update 1 -q:v 1 -y $distort0
+Invoke-Command -ScriptBlock {&$ffmpeg -i $video -ss 0 -update 1 -q:v 1 -y $distort0}
 
 # Apply effect 5 times
 if (Get-Command magick -ErrorAction SilentlyContinue) {
@@ -118,8 +107,7 @@ else {
             6 {$command = "-vf negate"}
             7 {$command = ""}
         }
-        $ffmpegexec = ".\ffmpeg.exe -i $distort0 $command -frames:v 1 -y $distort$i.png"
-        Invoke-Expression $ffmpegexec
+        Invoke-Command -ScriptBlock {&$ffmpeg -i $distort0 $command -frames:v 1 -y $distort$i.png}
     }
 }
 
@@ -150,5 +138,5 @@ if (Test-Path $video) {
 }
 
 # Concat distort
-.\ffmpeg.exe -f concat -i $concatdistort -i $randomSound -c:v libx264 -c:a aac -pix_fmt yuv420p -y "$video"
+Invoke-Command -ScriptBlock {&$ffmpeg -f concat -i $concatdistort -i $randomSound -c:v libx264 -c:a aac -pix_fmt yuv420p -y "$video"}
 

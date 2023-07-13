@@ -116,11 +116,11 @@ namespace YTPPlusPlusPlus
         {
             new List<string>()
             { // PAGE 1
-                "Welcome to YTP+++!",
+                "Welcome to YTP+++ v" + Global.productVersion + "!",
                 "This initial setup will help you get started with the program.",
                 "",
                 "This screen may be shown if there is an issue with your setup.",
-                "Otherwise, this may be the first boot of the program.",
+                "",
                 "On the next page, we will check prerequisites.",
                 "",
                 "The following software is required to run YTP+++:",
@@ -132,6 +132,7 @@ namespace YTPPlusPlusPlus
                 "",
                 "If you have any issues, please refer to the installation guide.",
                 "You may check console at any time by pressing ~ (tilde).",
+                "",
                 "Click \"Next Page\" to continue."
             },
             new List<string>()
@@ -146,11 +147,11 @@ namespace YTPPlusPlusPlus
                 "Optional software:",
                 " - ImageMagick: %IMAGEMAGICK%",
                 "",
-                "If any of the required software is missing, please install it.",
-                "You must add the software to your PATH environment variable.",
+                "If any required software is missing, install it and restart YTP+++.",
+                "",
                 "Instructions may be found in the installation guide.",
                 "",
-                "Click \"Next Page\" to continue if the required software is installed."
+                "Click \"Next Page\" to continue if all required software is installed."
             },
             new List<string>()
             { // PAGE 3
@@ -160,18 +161,18 @@ namespace YTPPlusPlusPlus
                 "",
                 "Download the latest version above if an update is available.",
                 "",
-                "Information about YTP+++ and its features may be found in the",
-                "YTP+ Hub Discord.",
+                "More info about YTP+++  may be found in the Discord server.",
+                "",
                 "To refer back to this setup, it may be accessed at any time from",
-                "the \"Help\" tab.",
+                "the \"Help\" tab under \"Show Tutorial Window\".",
                 "",
                 "Enjoy using YTP+++, and be sure to report any issues!",
                 "Click \"Continue\" to load plugins and proceed to YTP+++.",
                 "",
                 "If there are still issues, the continue button will be disabled.",
-                "Broken plugins may be the culprit, if the installation is correct.",
-                "Try restarting the program without plugins, or reinstalling.",
-                "You may also check console with ~ (tilde) for troubleshooting."
+                "Broken plugins may be the culprit, check \"console.txt\".",
+                "",
+                "Need help? Join the Discord server found on the GitHub page."
             }
         };
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -226,6 +227,20 @@ namespace YTPPlusPlusPlus
                                     break;
                             }
                             spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Not installed", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
+                        }
+                        if(tutorialText[i][j].Contains("Using system PATH"))
+                        {
+                            int offset = 0;
+                            switch(j)
+                            {
+                                case 4:
+                                    offset = 43;
+                                    break;
+                                case 5:
+                                    offset = 47;
+                                    break;
+                            }
+                            spriteBatch.DrawString(GlobalGraphics.fontMunroSmall, "Using system PATH", new Vector2(GlobalGraphics.Scale(offset+8+16+320*i), GlobalGraphics.Scale(60+offsetText)), Color.OrangeRed);
                         }
                         // Draw green overlay if prerequisite is met
                         if(tutorialText[i][j].Contains("Installed"))
@@ -298,16 +313,25 @@ namespace YTPPlusPlusPlus
         {
             // Get dependencies.
             UpdateManager.GetDependencyStatus();
-            foreach(string s in UpdateManager.GetDependencies().Split('\n'))
-            {
-                ConsoleOutput.WriteLine(s);
-            }
             for (int h = 0; h < tutorialText.Length; h++)
             {
                 for (int j = 0; j < tutorialText[h].Count; j++)
                 {
-                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", UpdateManager.ffmpegInstalled ? "Installed" : "Not installed");
-                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", UpdateManager.ffprobeInstalled ? "Installed" : "Not installed");
+                    string ffmpeg = UpdateManager.ffmpegInstalled ? "Installed" : "Not installed";
+                    string ffprobe = UpdateManager.ffprobeInstalled ? "Installed" : "Not installed";
+                    if(Global.useSystemFFmpeg)
+                    {
+                        if(!UpdateManager.ffmpegInstalled)
+                            ffmpeg = "Not installed";
+                        else
+                            ffmpeg = "Using system PATH";
+                        if(!UpdateManager.ffprobeInstalled)
+                            ffprobe = "Not installed";
+                        else
+                            ffprobe = "Using system PATH";
+                    }
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFMPEG%", ffmpeg);
+                    tutorialText[h][j] = tutorialText[h][j].Replace("%FFPROBE%", ffprobe);
                     tutorialText[h][j] = tutorialText[h][j].Replace("%IMAGEMAGICK%", UpdateManager.imagemagickInstalled ? "Installed" : "Not installed");
                 }
             }
@@ -319,7 +343,8 @@ namespace YTPPlusPlusPlus
         private void UpdateCheckThread(object? sender, DoWorkEventArgs e)
         {
             // Check for updates.
-            UpdateManager.CheckForUpdates();
+            if(!UpdateManager.checkedForUpdates)
+                UpdateManager.CheckForUpdates();
             for (int h = 0; h < tutorialText.Length; h++)
             {
                 for (int j = 0; j < tutorialText[h].Count; j++)

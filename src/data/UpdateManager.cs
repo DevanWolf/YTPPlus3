@@ -22,54 +22,56 @@ namespace YTPPlusPlusPlus
         public static bool imagemagickInstalled = false;
         public static bool updateFailed = false;
         public static bool updateAvailable = false;
+        public static bool checkedForUpdates = false;
+        public static bool DoesCommandExist(string command)
+        {
+            string output = "";
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "where",
+                Arguments = command,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+            Process process = new()
+            {
+                StartInfo = startInfo
+            };
+            process.OutputDataReceived += (sender, args) => output += args.Data;
+            process.Start();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+            bool exists = output != "" && !output.Contains("Could not find");
+            ConsoleOutput.WriteLine(command + (exists ? " found." : " not found."), exists ? Microsoft.Xna.Framework.Color.Magenta : Microsoft.Xna.Framework.Color.Red);
+            return exists;
+        }
         public static bool[] GetDependencyStatus()
         {
             // Test for dependencies.
             ConsoleOutput.WriteLine("Checking for dependencies...", Microsoft.Xna.Framework.Color.Magenta);
-            bool[] status = new bool[4];
-            string[] commands = new string[3]
+            bool[] status = new bool[3];
+            imagemagickInstalled = DoesCommandExist("magick");
+            // Check if .\ffmpeg.exe and .\ffprobe.exe exist.
+            status[0] = File.Exists(@".\ffmpeg.exe");
+            status[1] = File.Exists(@".\ffprobe.exe");
+            // If these don't exist, set Global.useSystemFFmpeg to true
+            // so that the program will use the system ffmpeg and ffprobe.
+            if (!status[0] || !status[1])
             {
-                @".\ffmpeg.exe",
-                @".\ffprobe.exe",
-                "magick"
-            };
-            for (int i = 0; i < commands.Length; i++)
-            {
-                ProcessStartInfo startInfo = new()
-                {
-                    FileName = "where",
-                    Arguments = commands[i],
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                };
-                Process process = new()
-                {
-                    StartInfo = startInfo
-                };
-                string output = "";
-                process.OutputDataReceived += (sender, args) => output += args.Data;
-                process.Start();
-                process.WaitForExit();
-                status[i] = output == "" || output.Contains("not find");
-                ConsoleOutput.WriteLine(output);
+                Global.useSystemFFmpeg = true;
             }
-            ffmpegInstalled = status[0];
-            ffprobeInstalled = status[1];
-            imagemagickInstalled = status[2];
-            return status;
-        }
-        public static string GetDependencies()
-        {
-            string[] commands = new string[3]
+            if(!Global.useSystemFFmpeg)
             {
-                "ffmpeg.exe",
-                "ffprobe.exe",
-                "magick"
-            };
-            return commands[0] + ": " + ffmpegInstalled + "\n" +
-                   commands[1] + ": " + ffprobeInstalled + "\n" +
-                   commands[2] + ": " + imagemagickInstalled;
+                ffmpegInstalled =  status[0];
+                ffprobeInstalled = status[1];
+            }
+            else
+            {
+                ffmpegInstalled = DoesCommandExist("ffmpeg");
+                ffprobeInstalled = DoesCommandExist("ffprobe");
+            }
+            return status;
         }
         public static bool CheckForUpdates()
         {
@@ -83,6 +85,7 @@ namespace YTPPlusPlusPlus
                 // Parse JSON.
                 dynamic? data = JsonConvert.DeserializeObject(json);
                 string? latestVersion = data?.tag_name;
+                checkedForUpdates = true;
                 // Compare versions.
                 if (latestVersion != "v" + Global.productVersion)
                 {

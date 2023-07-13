@@ -25,16 +25,11 @@ namespace YTPPlusPlusPlus
         List<string> lines = new()
         {
             Global.productName + " v" + Global.productVersion,
-            //"Welcome to the beta!",
-            //"If you find any bugs,",
-            //"please report them on",
-            //"the GitHub issues page.",
-            //"Thank you, and enjoy!"
-            "This is the final major",
-            "revision of this app.",
-            "Updates will be made",
-            "as needed for LTS.",
-            "Thank you!"
+            " ",
+            "If you find any bugs,",
+            "please report them on",
+            "the GitHub issues page.",
+            "Thank you, and enjoy!"
         };
         public void Show()
         {

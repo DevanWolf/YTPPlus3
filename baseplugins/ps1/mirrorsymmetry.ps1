@@ -9,7 +9,7 @@ if ($args.Length -eq 1 -and $args[0] -eq "query") {
 # Check command line args
 if ($args.Length -lt 13) {
     Write-Host "This is a YTP+++ plugin."
-    Write-Host "Usage: mirrorsymmetry.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options>"
+    Write-Host "Usage: mirrorsymmetry.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options> <settingcount> [<settingname> <settingvalue> ... ...]"
     exit 1
 }
 
@@ -60,37 +60,37 @@ if ($mirrorVerticalOrHorizontal -eq 0) {
     # hflip
     if ($mirrorSide -eq 0) {
         # Crop video to half width (temp2)
-        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w/2:in_h:0:0" -c:a copy -y "$temp2"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v "crop=in_w/2:in_h:0:0" -c:a copy -y "$temp2"}
         # Mirror video (temp3)
-        .\ffmpeg.exe -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"}
         # Combine videos
-        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"}
     }
     else {
         # Crop video to half width panned to right side (temp2)
-        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w/2:in_h:in_w/2:0" -c:a copy -y "$temp2"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v "crop=in_w/2:in_h:in_w/2:0" -c:a copy -y "$temp2"}
         # Mirror video (temp3)
-        .\ffmpeg.exe -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf "hflip" -c:a copy -y "$temp3"}
         # Combine videos
-        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]hstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"}
     }
 }
 else {
     # vflip
     if ($mirrorSide -eq 0) {
         # Crop video to half height (temp2)
-        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w:in_h/2:0:0" -c:a copy -y "$temp2"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v "crop=in_w:in_h/2:0:0" -c:a copy -y "$temp2"}
         # Mirror video (temp3)
-        .\ffmpeg.exe -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"}
         # Combine videos
-        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"}
     }
     else {
         # Crop video to half height panned to bottom side (temp2)
-        .\ffmpeg.exe -i "$temp1" -filter:v "crop=in_w:in_h/2:0:in_h/2" -c:a copy -y "$temp2"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v "crop=in_w:in_h/2:0:in_h/2" -c:a copy -y "$temp2"}
         # Mirror video (temp3)
-        .\ffmpeg.exe -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf "vflip" -c:a copy -y "$temp3"}
         # Combine videos
-        .\ffmpeg.exe -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -i "$temp3" -filter_complex "[0:v][1:v]vstack=inputs=2[v];[0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 -c:v libx264 -c:a aac -y "$video"}
     }
 }

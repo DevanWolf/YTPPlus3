@@ -9,7 +9,7 @@ if ($args.Length -eq 1 -and $args[0] -eq "query") {
 # Check command line args
 if ($args.Length -lt 13) {
     Write-Host "This is a YTP+++ plugin."
-    Write-Host "Usage: pitch.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options>"
+    Write-Host "Usage: pitch.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options> <settingcount> [<settingname> <settingvalue> ... ...]"
     exit 1
 }
 
@@ -48,8 +48,8 @@ $pitchUpOrDown = Get-Random -Minimum 0 -Maximum 2
 # Apply pitch filter
 if ($pitchUpOrDown -eq 0) {
     # Higher pitch
-    .\ffmpeg.exe -i "$temp1" -filter:v setpts=0.5*PTS -af asetrate=44100*2,aresample=44100 -y "$video"
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v setpts=0.5*PTS -af asetrate=44100*2,aresample=44100 -y "$video"}
 } else {
     # Lower pitch
-    .\ffmpeg.exe -i "$temp1" -filter:v setpts=2.0*PTS -af asetrate=44100/2,aresample=44100 -y "$video"
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -filter:v setpts=2.0*PTS -af asetrate=44100/2,aresample=44100 -y "$video"}
 }

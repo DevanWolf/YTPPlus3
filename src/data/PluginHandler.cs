@@ -58,8 +58,8 @@ namespace YTPPlusPlusPlus
                         SaveData.saveValues["VideoWidth"],
                         SaveData.saveValues["VideoHeight"],
                         @".\temp\",
-                        @".\ffmpeg.exe",
-                        @".\ffprobe.exe",
+                        Global.useSystemFFmpeg ? "ffmpeg" : @".\ffmpeg.exe",
+                        Global.useSystemFFmpeg ? "ffprobe" : @".\ffprobe.exe",
                         "magick",
                         @".\library\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",
@@ -110,8 +110,8 @@ namespace YTPPlusPlusPlus
                         SaveData.saveValues["VideoWidth"],
                         SaveData.saveValues["VideoHeight"],
                         @".\temp\",
-                        @".\ffmpeg.exe",
-                        @".\ffprobe.exe",
+                        Global.useSystemFFmpeg ? "ffmpeg" : @".\ffmpeg.exe",
+                        Global.useSystemFFmpeg ? "ffprobe" : @".\ffprobe.exe",
                         "magick",
                         @".\library\", // legacy resources folder
                         @".\" +Path.Join("library", "audio", "sfx") + @"\",

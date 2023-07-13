@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.Diagnostics;
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace YTPPlusPlusPlus
 {
@@ -244,6 +245,12 @@ namespace YTPPlusPlusPlus
             spriteBatch.DrawString(munroSmall, "Back", new Vector2(GlobalGraphics.Scale(205), GlobalGraphics.Scale(223)), Color.White);
             spriteBatch.DrawString(munroSmall, "Next", new Vector2(GlobalGraphics.Scale(281 + 1), GlobalGraphics.Scale(223 + 1)), Color.Black);
             spriteBatch.DrawString(munroSmall, "Next", new Vector2(GlobalGraphics.Scale(281), GlobalGraphics.Scale(223)), Color.White);
+            // Video total indicator
+            string totalIndicator = "Total: " + libraryFileCache[currentLibraryType].Count + " (" + libraryFileCache[currentLibraryType].Count(x => x.Enabled) + " active)";
+            Vector2 totalIndicatorSize = munroSmall.MeasureString(totalIndicator);
+            Vector2 totalPosition = new Vector2((rects["HeaderButton"].X + rects["HeaderButton"].Width / 2 - totalIndicatorSize.X / 2) - GlobalGraphics.Scale(10), GlobalGraphics.Scale(56));
+            spriteBatch.DrawString(munroSmall, totalIndicator, totalPosition + new Vector2(GlobalGraphics.Scale(1), GlobalGraphics.Scale(1)), Color.Black);
+            spriteBatch.DrawString(munroSmall, totalIndicator, totalPosition, Color.White);
             // Page indicator is centered
             int maxPages = (int)Math.Ceiling((double)libraryFileCache[currentLibraryType].Count / 12);
             // If the last page is full of videos, add an extra page
@@ -554,10 +561,12 @@ namespace YTPPlusPlusPlus
                                         demandChange = true;
                                         GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                                         return true;
+                                    /*
                                     case "HeaderButton":
                                         selectedFlags ^= 4;
                                         GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
                                         return true;
+                                    */
                                     case "PageLeftButton":
                                         if (page > 0)
                                         {

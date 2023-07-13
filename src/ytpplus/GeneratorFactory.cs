@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using System.Threading;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace YTPPlusPlusPlus
 {
@@ -29,7 +31,146 @@ namespace YTPPlusPlusPlus
         public string progressText { get; set; } = "Idle";
         public string failureReason { get; set; } = "";
         public bool generatorActive = false;
+        public bool forceConcatenate = false;
         public CaptionFile captionFile = new CaptionFile();
+        public BackgroundWorker? timeoutWorker { get; set; }
+        
+        public BackgroundWorker? killWorker { get; set; }
+        public static readonly int defaultTimeout = 20;
+        public int timeout = defaultTimeout; // in seconds
+        public static readonly string tempOutput = Path.Combine(Utilities.temporaryDirectory, "tempoutput.mp4");
+        public void KillChildProcesses()
+        {
+            // Find all child processes of the current process and kill them.
+            // These are ffmpeg and such, but not the main process.
+            // Powershell is used to do this.
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = "powershell.exe";
+            startInfo.Arguments = "Get-CimInstance Win32_Process | Where-Object {$_.ParentProcessId -eq " + Process.GetCurrentProcess().Id + "} | ForEach-Object {Stop-Process -Id $_.ProcessId}";
+            startInfo.UseShellExecute = false;
+            startInfo.CreateNoWindow = true;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            Process process = new Process();
+            // Add console print
+            process.OutputDataReceived += (object? sender, DataReceivedEventArgs e) => {
+                ConsoleOutput.WriteLine(e.Data);
+            };
+            process.ErrorDataReceived += (object? sender, DataReceivedEventArgs e) => {
+                ConsoleOutput.WriteLine(e.Data, Color.Red);
+            };
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+            process.Close();
+        }
+        // Kill worker
+        public void KillThread(object? sender, DoWorkEventArgs e)
+        {
+            if (killWorker?.CancellationPending == true)
+                return;
+            KillChildProcesses();
+            failureReason = "Generation cancelled.";
+            progressText = failureReason;
+            ConsoleOutput.WriteLine("Generation cancelled.", Color.Red);
+            if(forceConcatenate)
+            {
+                // Count videos under Path.Combine(Utilities.temporaryDirectory, "video(NUMBER).mp4")
+                Regex regex = new Regex(@"video(\d+).mp4");
+                int maxClips = 0;
+                foreach (string file in Directory.GetFiles(Utilities.temporaryDirectory))
+                {
+                    Match match = regex.Match(file);
+                    if (match.Success)
+                    {
+                        int clipNumber = int.Parse(match.Groups[1].Value);
+                        if (clipNumber > maxClips)
+                            maxClips = clipNumber;
+                    }
+                }
+                ConsoleOutput.WriteLine("Max clips: " + maxClips);
+                if(maxClips > 0)
+                {
+                    ConsoleOutput.WriteLine("Concatenating clips...", Color.LightGreen);
+                    progressText = "Concatenating clips...";
+                    progressState = ProgressState.Concatenating;
+                    Utilities.ConcatenateVideo(maxClips, tempOutput, null);
+                    bool finished = true;
+                    // Save to library if it exists.
+                    if (File.Exists(tempOutput))
+                    {
+                        ConsoleOutput.WriteLine("Saving to library...", Color.LightGreen);
+                        LibraryFile libraryFile = new LibraryFile(SaveData.saveValues["ProjectTitle"], tempOutput, DefaultLibraryTypes.Render);
+                        progressText = "Saving to library...";
+                        if(LibraryData.Load(libraryFile) == null)
+                        {
+                            ConsoleOutput.WriteLine("Failed to save to library.", Color.Red);
+                            progressText = "Failed to save to library.";
+                            progressState = ProgressState.Failed;
+                            failureReason = "Failed to save to library.";
+                            finished = false;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleOutput.WriteLine("Concatenation failed.", Color.Red);
+                        progressText = "Concatenation failed.";
+                        progressState = ProgressState.Failed;
+                        failureReason = "Concatenation failed.";
+                        finished = false;
+                    }
+                    if(finished)
+                    {
+                        progressText = "Completed!";
+                        progressState = ProgressState.Completed;
+                        generatorActive = false;
+                        // Open the video in the default video player if the user has that option enabled.
+                        if (bool.Parse(SaveData.saveValues["AddToLibrary"]))
+                        {
+                            ProcessStartInfo startInfo = new()
+                            {
+                                FileName = tempOutput,
+                                UseShellExecute = true
+                            };
+                            Process.Start(startInfo);
+                        }
+                    }
+                }
+            }
+        }
+        // Start kill thread
+        public void StartKillThread()
+        {
+            if(killWorker?.IsBusy == true)
+            {
+                ConsoleOutput.WriteLine("Cancellation already in progress.", Color.Red);
+                return;
+            }
+            if(killWorker == null)
+            {
+                killWorker = new BackgroundWorker();
+                killWorker.DoWork += KillThread;
+            }
+            killWorker.RunWorkerAsync();
+        }
+        // Timeout handler
+        public void TimeoutThread(object? sender, DoWorkEventArgs e)
+        {
+            while (true)
+            {
+                if (timeoutWorker?.CancellationPending == true)
+                    return;
+                // Timeout starts at 30 seconds
+                if (timeout == 0)
+                {
+                    ConsoleOutput.WriteLine("Timed out.", Color.Red);
+                    KillChildProcesses();
+                }
+                if(timeout > -1)
+                    timeout--;
+                Thread.Sleep(1000);
+            }
+        }
         public static CaptionText? Caption(string text, float startTime, float endTime)
         {
             // float (seconds) to int (ms)
@@ -74,8 +215,6 @@ namespace YTPPlusPlusPlus
             */
             ConsoleOutput.WriteLine("Seed: " + seed, Color.Gray);
             globalRandom = new Random(seed);
-
-            string tempOutput = Path.Combine(Utilities.temporaryDirectory, "tempoutput.mp4");
             int maxClips = int.Parse(SaveData.saveValues["MaxClipCount"]);
             
             // Clean up previous temporary files.
@@ -396,6 +535,7 @@ namespace YTPPlusPlusPlus
                 {
                     for (int i = 0; i < maxClips; i++)
                     {
+                        timeout = defaultTimeout;
                         CaptionText currentCaption = null;
                         float addedTime = 0;
                         if (vidThreadWorker?.CancellationPending == true)
@@ -548,15 +688,15 @@ namespace YTPPlusPlusPlus
                             }
                             if (vidThreadWorker?.CancellationPending == true)
                                 return;
-                            if(!rolledForTransition)
+                            if(!rolledForTransition || bool.Parse(SaveData.saveValues["TransitionEffects"]))
                             {
                                 int numberOfPlugins = PluginHandler.GetPluginCount();
                                 if(numberOfPlugins > 0)
                                 {
                                     // Roll for effect
-                                    if(RandomInt(0, 101) < int.Parse(SaveData.saveValues["EffectChance"]))
+                                    if(RandomInt(0, 101) < (rolledForTransition ? int.Parse(SaveData.saveValues["TransitionEffectChance"]) : int.Parse(SaveData.saveValues["EffectChance"])))
                                     {
-                                        progressText = "Baking effects... (" + (i + 1) + " of " + maxClips + ")";
+                                        progressText = (rolledForTransition ? "Boiling" : "Baking") + " effects... (" + (i + 1) + " of " + maxClips + ")";
                                         // We rolled for an effect, let's pick one.
                                         PluginReturnValue effect = PluginHandler.PickRandom(globalRandom, Path.Combine(Utilities.temporaryDirectory, "video" + i + ".mp4"));
                                         if(effect.success)
@@ -565,7 +705,7 @@ namespace YTPPlusPlusPlus
                                             currentCaption = Caption(effect.pluginName.ToUpper(), currentTime, currentTime + effectDuration);
                                             addedTime = effectDuration;
                                         }
-                                        ConsoleOutput.WriteLine(effect.success ? "Applied effect to clip " + i + "." : "Failed to apply effect to clip " + i + ".", effect.success ? Color.LightGreen : Color.Red);
+                                        ConsoleOutput.WriteLine(effect.success ? "Applied effect to " + (rolledForTransition ? "transition" : "clip") + " " + i + "." : "Failed to apply effect to " + (rolledForTransition ? "transition" : "clip") + " " + i + ".", effect.success ? Color.LightGreen : Color.Red);
                                     }
                                 }
                             }
@@ -642,6 +782,8 @@ namespace YTPPlusPlusPlus
                     generatorActive = false;
                     if(vidThreadWorker != null)
                         vidThreadWorker.ReportProgress(100);
+                    if(timeoutWorker != null)
+                        timeoutWorker.CancelAsync();
                     // Open the video in the default video player if the user has that option enabled.
                     if (bool.Parse(SaveData.saveValues["AddToLibrary"]))
                     {
@@ -689,9 +831,18 @@ namespace YTPPlusPlusPlus
             }
             if(vidThreadWorker.IsBusy)
             {
-                ConsoleOutput.WriteLine("Generation is busy and cannot be cancelled.", Color.Red);
+                ConsoleOutput.WriteLine("Generation is busy...", Color.Red);
                 return;
             }
+            if(timeoutWorker == null)
+            {
+                timeoutWorker = new BackgroundWorker();
+                timeoutWorker.DoWork += TimeoutThread;
+                timeoutWorker.WorkerSupportsCancellation = true;
+            }
+            forceConcatenate = false;
+            timeout = defaultTimeout;
+            timeoutWorker.RunWorkerAsync();
             vidThreadWorker.RunWorkerAsync();
             ConsoleOutput.WriteLine("Generation started.", Color.Green);
         }
@@ -699,7 +850,7 @@ namespace YTPPlusPlusPlus
         {
             StartGeneration(progressReporter, completedReporter);
         }
-        public void CancelGeneration(bool user = false)
+        public void CancelGeneration(bool user = false, bool forceConcatenate = false)
         {
             if(vidThreadWorker != null)
             {
@@ -707,11 +858,13 @@ namespace YTPPlusPlusPlus
                 progressState = ProgressState.Failed;
                 if(user)
                 {
+                    this.forceConcatenate = forceConcatenate;
                     if(vidThreadWorker.IsBusy)
                     {
-                        failureReason = "Generation busy, waiting...";
+                        failureReason = "Generation cancelling...";
                         progressText = failureReason;
-                        ConsoleOutput.WriteLine("Generation busy, waiting...", Color.Yellow);
+                        ConsoleOutput.WriteLine("Generation cancelling...", Color.Yellow);
+                        StartKillThread();
                     }
                     else
                     {
@@ -727,6 +880,8 @@ namespace YTPPlusPlusPlus
                 vidThreadWorker.CancelAsync();
                 generatorActive = false;
             }
+            if(timeoutWorker != null)
+                timeoutWorker.CancelAsync();
         }
         public float RandomFloat(float min, float max)
         {

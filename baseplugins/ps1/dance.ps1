@@ -13,7 +13,7 @@ if ($args.Length -eq 1 -and $args[0] -eq "query") {
 # Check command line args
 if ($args.Length -lt 13) {
     Write-Host "This is a YTP+++ plugin."
-    Write-Host "Usage: dance.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options>"
+    Write-Host "Usage: dance.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options> <settingcount> [<settingname> <settingvalue> ... ...]"
     exit 1
 }
 
@@ -87,15 +87,15 @@ if ($useOriginalAudioRoll -lt $noMusicChance) {
 
 # Apply effects
 if (($null -eq $randomSound) -or $useOriginalAudio) {
-    .\ffmpeg.exe -i "$temp1" -t $randomTime -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"
-    .\ffmpeg.exe -i "$temp2" -vf reverse -af areverse -y "$temp3"
-    .\ffmpeg.exe -i "$temp3" -i "$temp2" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out];[0:a][1:a][0:a][1:a][0:a][1:a][0:a][1:a]concat=n=8:v=0:a=1[out2]" -map "[out]" -map "[out2]" -shortest -y "$video"
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -t $randomTime -filter_complex "[0:v]setpts=.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" -y "$temp2"}
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf reverse -af areverse -y "$temp3"}
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp3" -i "$temp2" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out];[0:a][1:a][0:a][1:a][0:a][1:a][0:a][1:a]concat=n=8:v=0:a=1[out2]" -map "[out]" -map "[out2]" -shortest -y "$video"}
 }
 else {
     # Seek audio 1-5 seconds ahead to avoid silence at the beginning
     $seek = Get-Random -Minimum 1 -Maximum 5
-    .\ffmpeg.exe -i "$temp1" -an -t $randomTime -vf setpts=.5*PTS -y "$temp2"
-    .\ffmpeg.exe -i "$temp2" -vf reverse -y "$temp3"
-    .\ffmpeg.exe -i "$temp3" -i "$temp2" -ss $seek -i "$randomSound" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out]" -map "[out]" -map 2:a -shortest -y "$video"
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -an -t $randomTime -vf setpts=.5*PTS -y "$temp2"}
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp2" -vf reverse -y "$temp3"}
+    Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp3" -i "$temp2" -ss $seek -i "$randomSound" -filter_complex "[0:v][1:v][0:v][1:v][0:v][1:v][0:v][1:v]concat=n=8:v=1[out]" -map "[out]" -map 2:a -shortest -y "$video"}
 }
 

@@ -92,6 +92,16 @@ namespace YTPPlusPlusPlus
                 }
                 return false;
             }));
+            controllerRendering.Add("ForceConcatenate", new Button("Combine Clips Now", "Stop rendering and force concatenation.", new Vector2(119+36+104, 60+10+19*8), (int i) => {
+                switch(i)
+                {
+                    case 2: // left click
+                        GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        Global.generatorFactory.CancelGeneration(true, true);
+                        return true;
+                }
+                return false;
+            }));
             // TENNIS MODE
             controllerTennis.Add("TennisLabel", new Label("Tennis Options", new Vector2(144, 64+19*8)));
             controllerTennis.Add("TennisEnabled", new Switch("Use Tennis Mode", "Send generations back & forth!", new Vector2(139, 60), (int i) => {
@@ -117,17 +127,47 @@ namespace YTPPlusPlusPlus
                 return false;
             }));
             // ADVANCED MODE
-            controllerAdvanced.Add("ImageChance", new Dial("Image Chance", "How often image types are rolled.", new Vector2(139, 60+19*6), int.Parse(SaveData.saveValues["ImageChance"]), 0, 100, (int i) => {
-                int oldValue = int.Parse(SaveData.saveValues["ImageChance"]);
-                SaveData.saveValues["ImageChance"] = i.ToString();
-                if(oldValue != int.Parse(SaveData.saveValues["ImageChance"]))
+            controllerAdvanced.Add("AdvancedLabel", new Label("Advanced Options", new Vector2(144, 64+19*8)));
+            controllerAdvanced.Add("BackToRegularOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {
+                switch(i)
+                {
+                    case 2: // left click
+                        advanced = false;
+                        if(int.Parse(SaveData.saveValues["TennisScore"]) >= Global.tennisScore)
+                        {
+                            Global.tennisMode = true;
+                            GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
+                        else
+                        {
+                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                        }
+                        return true;
+                }
+                return false;
+            }));
+            controllerAdvanced.Add("TransitionEffectChance", new Dial("Transition Effect Chance", "How often transition effects are rolled.", new Vector2(139, 60+19*7), int.Parse(SaveData.saveValues["TransitionEffectChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["TransitionEffectChance"]);
+                SaveData.saveValues["TransitionEffectChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["TransitionEffectChance"]))
                     SaveData.Save();
                 return false;
             }));
-            controllerAdvanced.Add("OverlayChance", new Dial("Overlay Chance", "How often overlays are rolled.", new Vector2(139, 60+19*5), int.Parse(SaveData.saveValues["OverlayChance"]), 0, 100, (int i) => {
-                int oldValue = int.Parse(SaveData.saveValues["OverlayChance"]);
-                SaveData.saveValues["OverlayChance"] = i.ToString();
-                if(oldValue != int.Parse(SaveData.saveValues["OverlayChance"]))
+            controllerAdvanced.Add("TransitionEffects", new Switch("Transition Effects", "Allow transitions to use effects.", new Vector2(139, 60+19*6), (int i) => {
+                bool switchState = (i & 256) != 0;
+                if((i & 2) != 0)
+                {
+                    string oldValue = SaveData.saveValues["TransitionEffects"];
+                    SaveData.saveValues["TransitionEffects"] = switchState.ToString().ToLower();
+                    if(oldValue != SaveData.saveValues["TransitionEffects"])
+                        SaveData.Save();
+                }
+                return switchState;
+            }, SaveData.saveValues["TransitionEffects"] == "true"));
+            controllerAdvanced.Add("ImageChance", new Dial("Image Chance", "How often image types are rolled.", new Vector2(139, 60+19*5), int.Parse(SaveData.saveValues["ImageChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["ImageChance"]);
+                SaveData.saveValues["ImageChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["ImageChance"]))
                     SaveData.Save();
                 return false;
             }));
@@ -159,6 +199,13 @@ namespace YTPPlusPlusPlus
                     SaveData.Save();
                 return false;
             }));
+            controllerAdvanced.Add("OverlayChance", new Dial("Chance", "How often overlays are rolled.", new Vector2(224, 60), int.Parse(SaveData.saveValues["OverlayChance"]), 0, 100, (int i) => {
+                int oldValue = int.Parse(SaveData.saveValues["OverlayChance"]);
+                SaveData.saveValues["OverlayChance"] = i.ToString();
+                if(oldValue != int.Parse(SaveData.saveValues["OverlayChance"]))
+                    SaveData.Save();
+                return false;
+            }));
             controllerAdvanced.Add("OverlaysEnabled", new Switch("Use Overlays", "Insert overlay (green screen) transitions.", new Vector2(139, 60), (int i) => {
                 bool switchState = (i & 256) != 0;
                 if((i & 2) != 0)
@@ -170,25 +217,6 @@ namespace YTPPlusPlusPlus
                 }
                 return switchState;
             }, SaveData.saveValues["OverlaysEnabled"] == "true"));
-            controllerAdvanced.Add("AdvancedLabel", new Label("Advanced Options", new Vector2(144, 64+19*8)));
-            controllerAdvanced.Add("BackToRegularOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {
-                switch(i)
-                {
-                    case 2: // left click
-                        advanced = false;
-                        if(int.Parse(SaveData.saveValues["TennisScore"]) >= Global.tennisScore)
-                        {
-                            Global.tennisMode = true;
-                            GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        }
-                        else
-                        {
-                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                        }
-                        return true;
-                }
-                return false;
-            }));
             // REGULAR MODE
             // Add buttons
             controller.Add("MoreOptions", new Button("Next Page", "Next page of options.", new Vector2(239+36, 60+10+19*8), (int i) => {

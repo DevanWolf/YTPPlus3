@@ -68,10 +68,14 @@ namespace YTPPlusPlusPlus
                     spriteBatch.DrawString(munroSmall, Path.GetFileName(PluginHandler.plugins[i].path), new Vector2(GlobalGraphics.Scale(141+1), GlobalGraphics.Scale(58+1 + i * pluginEntry.Height + i)), Color.Black);
                     spriteBatch.DrawString(munroSmall, Path.GetFileName(PluginHandler.plugins[i].path), new Vector2(GlobalGraphics.Scale(141), GlobalGraphics.Scale(58 + i * pluginEntry.Height + i)), Color.White);
                     if(Global.canRender)
+                    {
                         spriteBatch.Draw(PluginHandler.plugins[i].enabled ? interactiveSwitchOn : interactiveSwitchOff, new Rectangle(GlobalGraphics.Scale(271), GlobalGraphics.Scale(60 + i * pluginEntry.Height + i), interactiveSwitchOn.Width * GlobalGraphics.scale, interactiveSwitchOn.Height * GlobalGraphics.scale), Color.White);
+                    }
                     else
+                    {
                         spriteBatch.DrawString(munroSmall, "...", new Vector2(GlobalGraphics.Scale(277+1), GlobalGraphics.Scale(58 + 1 + i * pluginEntry.Height + i)), Color.Black);
                         spriteBatch.DrawString(munroSmall, "...", new Vector2(GlobalGraphics.Scale(277), GlobalGraphics.Scale(58 + i * pluginEntry.Height + i)), Color.White);
+                    }
                 }
                 // End offset
                 spriteBatch.End();

@@ -42,7 +42,9 @@ namespace YTPPlusPlusPlus
             {"EffectChance", "60"},
             {"FirstBoot", "true"},
             {"FirstBootVersion", Global.productVersion},
-            {"TennisMode", "false"}
+            {"TennisMode", "false"},
+            {"TransitionEffects", "false"},
+            {"TransitionEffectChance", "30"}
         };
         public static string saveFileName = "Options.json";
         public static bool Save()

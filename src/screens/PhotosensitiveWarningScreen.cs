@@ -29,13 +29,9 @@ namespace YTPPlusPlusPlus
         private double timeText = 0;
         // shamelessly copied from tutorial screen
         private BackgroundWorker updateWorker;
-        private void UpdateCheckThread(object? sender, DoWorkEventArgs e)
+        private void ErrorOut()
         {
-            // Check for updates.
-            UpdateManager.GetDependencyStatus();
-            Global.pluginsLoaded = PluginHandler.LoadPlugins();
-            UpdateManager.CheckForUpdates();
-            if(UpdateManager.updateAvailable || !Global.pluginsLoaded)
+            if(ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.screenType == ScreenType.Hidden)
             {
                 ScreenManager.PushNavigation("Initial Setup");
                 ScreenManager.GetScreen<TutorialScreen>("Initial Setup")?.Show();
@@ -46,7 +42,30 @@ namespace YTPPlusPlusPlus
                 ScreenManager.GetScreen<SocialScreen>("Socials")?.Hide();
                 GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
             }
-            // Dispose of worker
+        }
+        private void UpdateCheckThread(object? sender, DoWorkEventArgs e)
+        {
+            // Check for updates.
+            UpdateManager.CheckForUpdates();
+            if(UpdateManager.updateAvailable)
+            {
+                ErrorOut();
+            }
+            else
+            {
+                UpdateManager.GetDependencyStatus();
+                if(!UpdateManager.ffmpegInstalled || !UpdateManager.ffprobeInstalled)
+                {
+                    ErrorOut();
+                }
+                else
+                {
+                    Global.pluginsLoaded = PluginHandler.LoadPlugins();
+                    if(!Global.pluginsLoaded)
+                        ErrorOut();
+                }
+            }
+            // Dispose of worker.
             updateWorker.Dispose();
             updateWorker = null;
         }

@@ -9,7 +9,7 @@ if ($args.Length -eq 1 -and $args[0] -eq "query") {
 # Check command line args
 if ($args.Length -lt 13) {
     Write-Host "This is a YTP+++ plugin."
-    Write-Host "Usage: randomsound.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options>"
+    Write-Host "Usage: randomsound.ps1 <video> <width> <height> <temp> <ffmpeg> <ffprobe> <magick> <resources> <sounds> <sources> <music> <library> <options> <settingcount> [<settingname> <settingvalue> ... ...]"
     exit 1
 }
 
@@ -57,8 +57,8 @@ if ($null -ne $randomSound) {
 
     # Use original audio if equal to 0
     if ($muteOriginalAudio -eq 0) {
-        .\ffmpeg.exe -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=1[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"}
     } else {
-        .\ffmpeg.exe -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=0[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"
+        Invoke-Command -ScriptBlock {&$ffmpeg -i "$temp1" -i "$randomSound" -filter_complex "[0:a]volume=0[a0];[1:a]volume=1[a1];[a0][a1]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "$video"}
     }
 }
