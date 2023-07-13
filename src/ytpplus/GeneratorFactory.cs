@@ -134,6 +134,7 @@ namespace YTPPlusPlusPlus
                             };
                             Process.Start(startInfo);
                         }
+                        Global.justCompletedRender = true;
                     }
                 }
             }

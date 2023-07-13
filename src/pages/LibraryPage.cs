@@ -33,6 +33,7 @@ namespace YTPPlusPlusPlus
         private int selectedFlags = 1 | 8; // 1 = Video, 8 = First SubType
         private int staticAnim = 0;
         private int audioAnim = 0;
+        private int deleteConfirmPos = -1;
         private double lastAnimTime;
         private double lastAnimTimeAudio;
         private int page = 0;
@@ -62,6 +63,7 @@ namespace YTPPlusPlusPlus
         public void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
             // Library assets
+            GlobalContent.AddTexture("DeleteConfirm", contentManager.Load<Texture2D>("graphics/library/deleteconfirm"));
             GlobalContent.AddTexture("AddVideoOverlay", contentManager.Load<Texture2D>("graphics/library/addvideooverlay"));
             GlobalContent.AddTexture("HeaderButton", contentManager.Load<Texture2D>("graphics/library/headerbutton"));
             GlobalContent.AddTexture("HeaderButtonSelected", contentManager.Load<Texture2D>("graphics/library/headerbuttonselected"));
@@ -120,6 +122,7 @@ namespace YTPPlusPlusPlus
                 return; // changing
             // Store textures in local variable for performance
             Texture2D pixel = GlobalContent.GetTexture("Pixel");
+            Texture2D deleteConfirm = GlobalContent.GetTexture("DeleteConfirm");
             Texture2D addVideoOverlay = GlobalContent.GetTexture("AddVideoOverlay");
             Texture2D headerButton = GlobalContent.GetTexture("HeaderButton");
             Texture2D headerButtonSelected = GlobalContent.GetTexture("HeaderButtonSelected");
@@ -146,6 +149,7 @@ namespace YTPPlusPlusPlus
                     Rectangle videoHolderRect = new Rectangle(GlobalGraphics.Scale(201 + (33 * a) + (a * 2)), GlobalGraphics.Scale(72 + (35 * b) + (b * 2)), GlobalGraphics.Scale(videoHolder.Width), GlobalGraphics.Scale(videoHolder.Height));
                     Rectangle staticRect = new Rectangle(videoHolderRect.X + GlobalGraphics.Scale(2), videoHolderRect.Y + GlobalGraphics.Scale(2), GlobalGraphics.Scale(29), GlobalGraphics.Scale(22));
                     Rectangle addVideoOverlayRect = new Rectangle(videoHolderRect.X + GlobalGraphics.Scale(4), videoHolderRect.Y + GlobalGraphics.Scale(26), GlobalGraphics.Scale(addVideoOverlay.Width), GlobalGraphics.Scale(addVideoOverlay.Height));
+                    Rectangle deleteConfirmRect = new Rectangle(videoHolderRect.X + GlobalGraphics.Scale(3), videoHolderRect.Y + GlobalGraphics.Scale(26), GlobalGraphics.Scale(deleteConfirm.Width), GlobalGraphics.Scale(deleteConfirm.Height));
                     Rectangle toggleButtonRect = new Rectangle(videoHolderRect.X + GlobalGraphics.Scale(11), videoHolderRect.Y + GlobalGraphics.Scale(27), GlobalGraphics.Scale(videoOn.Width), GlobalGraphics.Scale(videoOn.Height));
                     // Get library item at this position and page
                     int position = a + (b * 3) + (12 * page);
@@ -177,6 +181,12 @@ namespace YTPPlusPlusPlus
                     if(!video)
                     {
                         spriteBatch.Draw(addVideoOverlay, addVideoOverlayRect, Color.White);
+                    }
+                    else if(deleteConfirmPos == position)
+                    {
+                        spriteBatch.DrawString(munroSmall, "Delete?", new Vector2(deleteConfirmRect.X - GlobalGraphics.Scale(1-1), deleteConfirmRect.Y - GlobalGraphics.Scale(14-1)), Color.Black);
+                        spriteBatch.DrawString(munroSmall, "Delete?", new Vector2(deleteConfirmRect.X - GlobalGraphics.Scale(1), deleteConfirmRect.Y - GlobalGraphics.Scale(14)), Color.White);
+                        spriteBatch.Draw(deleteConfirm, deleteConfirmRect, Color.White);
                     }
                     else
                     {
@@ -403,6 +413,7 @@ namespace YTPPlusPlusPlus
             }
             if(demandChange)
             {
+                deleteConfirmPos = -1;
                 // Ask library to rescan
                 CacheLibrary();
                 Texture2D subTypeButton = GlobalContent.GetTexture("SubTypeButton");
@@ -685,93 +696,7 @@ namespace YTPPlusPlusPlus
                             }
                             else if (button1Rect.Contains(MouseInput.MouseState.Position) && left)
                             {
-                                // If there is a video in this position, this is the organize button
-                                if (libraryFileCache[currentLibraryType].Count > position)
-                                {
-                                    // Replicate subtype objects
-                                    Texture2D subTypeButton = GlobalContent.GetTexture("SubTypeButtonOrganize");
-                                    int offset = 0;
-                                    for(int s = 0; s < libraryTypes[currentRootType].Count; s++)
-                                    {
-                                        // make sure it exists in rects
-                                        if(libraryTypes[currentRootType][s] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
-                                        {
-                                            offset -= 13;
-                                            continue;
-                                        }
-                                        Rectangle subTypeRect = new Rectangle(GlobalGraphics.Scale(135), GlobalGraphics.Scale(71 + offset + 13 * s), GlobalGraphics.Scale(subTypeButton.Width), GlobalGraphics.Scale(subTypeButton.Height));
-                                        Global.mask.AddUnmaskedObject("SubType" + s, new SimpleObject(subTypeRect, Color.Gray, subTypeButton, () => {
-                                            if(subTypeRect.Contains(MouseInput.MouseState.Position))
-                                            {
-                                                organizeFile = position;
-                                                // Mouse position used to determine subtype button
-                                                Vector2 mousePosition = MouseInput.MouseState.Position.ToVector2();
-                                                for (int i = 0; i < libraryTypes[currentRootType].Count; i++)
-                                                {
-                                                    if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
-                                                    {
-                                                        mousePosition.Y += GlobalGraphics.Scale(13);
-                                                        continue;
-                                                    }
-                                                    Rectangle subTypeRect = new Rectangle(GlobalGraphics.Scale(135), GlobalGraphics.Scale(71+ 13 * i), GlobalGraphics.Scale(subTypeButton.Width), GlobalGraphics.Scale(subTypeButton.Height));
-                                                    if (subTypeRect.Contains(mousePosition))
-                                                    {
-                                                        organizeType = i;
-                                                        break;
-                                                    }
-                                                }
-                                                organizing = false;
-                                                Global.mask.Disable();
-                                                GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                                                return true;
-                                            }
-                                            return false;
-                                        }));
-                                    }
-                                    int pagelessPosition = position - (12 * page);
-                                    bool useVideoPlayer = currentRootType == LibraryRootType.Video;
-                                    if(useVideoPlayer && !videoPlayers.ContainsKey(pagelessPosition))
-                                        useVideoPlayer = false;
-                                    // Replicate videoplayer
-                                    Texture2D videoPlayerTexture = useVideoPlayer ? videoPlayers[pagelessPosition] : GlobalContent.GetTexture("AudioAnim" + audioAnim);
-                                    Global.mask.AddUnmaskedObject("VideoPlayer", new SimpleObject(staticRect, Color.White, videoPlayerTexture, () => {
-                                        return false;
-                                    }));
-                                    // Replicate video holder
-                                    Global.mask.AddUnmaskedObject("VideoHolder", new SimpleObject(videoHolderRect, Color.White, videoHolder, () => {
-                                        if(!organizing)
-                                            return false;
-                                        // If button 1 is pressed, undo
-                                        if (button1Rect.Contains(MouseInput.MouseState.Position))
-                                        {
-                                            organizing = false;
-                                            organizeFile = -1;
-                                            organizeType = -1;
-                                            Global.mask.Disable();
-                                            GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                                            return true;
-                                        }
-                                        return false;
-                                    }));
-                                    Texture2D videoToggle = libraryFileCache[currentLibraryType][position].Enabled ? videoOn : videoOff;
-                                    Global.mask.AddUnmaskedObject("VideoToggle", new SimpleObject(toggleButtonRect, Color.White, videoToggle, () => {
-                                        return false;
-                                    }));
-                                    // Activate mask
-                                    Global.mask.Enable();
-                                    organizing = true;
-                                    GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
-                                    return true;
-                                }
-                                else
-                                {
-                                    add = true;
-                                }
-                            }
-                            else if (button2Rect.Contains(MouseInput.MouseState.Position) && left)
-                            {
-                                // Remove video button
-                                if (libraryFileCache[currentLibraryType].Count > position)
+                                if(deleteConfirmPos == position)
                                 {
                                     // Remove video
                                     LibraryFile file = libraryFileCache[currentLibraryType][position];
@@ -783,10 +708,114 @@ namespace YTPPlusPlusPlus
                                 }
                                 else
                                 {
-                                    add = true;
+                                    // If there is a video in this position, this is the organize button
+                                    if (libraryFileCache[currentLibraryType].Count > position)
+                                    {
+                                        // Replicate subtype objects
+                                        Texture2D subTypeButton = GlobalContent.GetTexture("SubTypeButtonOrganize");
+                                        int offset = 0;
+                                        for(int s = 0; s < libraryTypes[currentRootType].Count; s++)
+                                        {
+                                            // make sure it exists in rects
+                                            if(libraryTypes[currentRootType][s] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
+                                            {
+                                                offset -= 13;
+                                                continue;
+                                            }
+                                            Rectangle subTypeRect = new Rectangle(GlobalGraphics.Scale(135), GlobalGraphics.Scale(71 + offset + 13 * s), GlobalGraphics.Scale(subTypeButton.Width), GlobalGraphics.Scale(subTypeButton.Height));
+                                            Global.mask.AddUnmaskedObject("SubType" + s, new SimpleObject(subTypeRect, Color.Gray, subTypeButton, () => {
+                                                if(subTypeRect.Contains(MouseInput.MouseState.Position))
+                                                {
+                                                    organizeFile = position;
+                                                    // Mouse position used to determine subtype button
+                                                    Vector2 mousePosition = MouseInput.MouseState.Position.ToVector2();
+                                                    for (int i = 0; i < libraryTypes[currentRootType].Count; i++)
+                                                    {
+                                                        if(libraryTypes[currentRootType][i] == "Tennis" && int.Parse(SaveData.saveValues["TennisScore"]) < Global.tennisScore)
+                                                        {
+                                                            mousePosition.Y += GlobalGraphics.Scale(13);
+                                                            continue;
+                                                        }
+                                                        Rectangle subTypeRect = new Rectangle(GlobalGraphics.Scale(135), GlobalGraphics.Scale(71+ 13 * i), GlobalGraphics.Scale(subTypeButton.Width), GlobalGraphics.Scale(subTypeButton.Height));
+                                                        if (subTypeRect.Contains(mousePosition))
+                                                        {
+                                                            organizeType = i;
+                                                            break;
+                                                        }
+                                                    }
+                                                    organizing = false;
+                                                    Global.mask.Disable();
+                                                    GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                                                    return true;
+                                                }
+                                                return false;
+                                            }));
+                                        }
+                                        int pagelessPosition = position - (12 * page);
+                                        bool useVideoPlayer = currentRootType == LibraryRootType.Video;
+                                        if(useVideoPlayer && !videoPlayers.ContainsKey(pagelessPosition))
+                                            useVideoPlayer = false;
+                                        // Replicate videoplayer
+                                        Texture2D videoPlayerTexture = useVideoPlayer ? videoPlayers[pagelessPosition] : GlobalContent.GetTexture("AudioAnim" + audioAnim);
+                                        Global.mask.AddUnmaskedObject("VideoPlayer", new SimpleObject(staticRect, Color.White, videoPlayerTexture, () => {
+                                            return false;
+                                        }));
+                                        // Replicate video holder
+                                        Global.mask.AddUnmaskedObject("VideoHolder", new SimpleObject(videoHolderRect, Color.White, videoHolder, () => {
+                                            if(!organizing)
+                                                return false;
+                                            // If button 1 is pressed, undo
+                                            if (button1Rect.Contains(MouseInput.MouseState.Position))
+                                            {
+                                                organizing = false;
+                                                organizeFile = -1;
+                                                organizeType = -1;
+                                                Global.mask.Disable();
+                                                GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                                                return true;
+                                            }
+                                            return false;
+                                        }));
+                                        Texture2D videoToggle = libraryFileCache[currentLibraryType][position].Enabled ? videoOn : videoOff;
+                                        Global.mask.AddUnmaskedObject("VideoToggle", new SimpleObject(toggleButtonRect, Color.White, videoToggle, () => {
+                                            return false;
+                                        }));
+                                        // Activate mask
+                                        Global.mask.Enable();
+                                        organizing = true;
+                                        GlobalContent.GetSound("Option").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        add = true;
+                                    }
                                 }
                             }
-                            else if (toggleButtonRect.Contains(MouseInput.MouseState.Position) && left)
+                            else if (button2Rect.Contains(MouseInput.MouseState.Position) && left)
+                            {
+                                if(deleteConfirmPos == position)
+                                {
+                                    deleteConfirmPos = -1;
+                                    GlobalContent.GetSound("Back").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                                    return true;
+                                }
+                                else
+                                {
+                                    // Remove video button
+                                    if (libraryFileCache[currentLibraryType].Count > position)
+                                    {
+                                        deleteConfirmPos = position;
+                                        GlobalContent.GetSound("Prompt").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        add = true;
+                                    }
+                                }
+                            }
+                            else if (toggleButtonRect.Contains(MouseInput.MouseState.Position) && left && deleteConfirmPos == -1)
                             {
                                 // Toggle video button
                                 if (libraryFileCache[currentLibraryType].Count > position)

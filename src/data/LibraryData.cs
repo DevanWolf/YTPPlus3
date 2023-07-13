@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
+using static YTPPlusPlusPlus.FileOperationAPIWrapper;
 
 namespace YTPPlusPlusPlus
 {
@@ -302,8 +304,10 @@ namespace YTPPlusPlusPlus
             }
             try
             {
-                File.Delete(file.Path);
-                libraryFiles.Remove(file);
+                //File.Delete(file.Path);
+                // Ask user if they want to move to recycle bin with fileoperationapiwrapper.
+                if(FileOperationAPIWrapper.Send(file.Path))
+                    libraryFiles.Remove(file);
             }
             catch (Exception e)
             {
