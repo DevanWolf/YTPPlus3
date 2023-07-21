@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -71,18 +72,18 @@ namespace YTPPlusPlusPlus
         }
         private List<string> warningText = new List<string>()
         {
-            "WARNING:",
-            "A very small percentage of people may experience a seizure",
-            "when exposed to certain visual images, including flashing",
-            "lights or patterns that may appear in generated content.",
             " ",
-            "When using YTP+++, please be aware of",
-            "this and take any necessary precautions.",
             " ",
-            "If you are sensitive to flashing lights,",
-            "please do not use this program.",
             " ",
-            "Click anywhere to continue."
+            "This software is no longer supported.",
+            "Please check out Nonsensical Video generator on Steam.",
+            " ",
+            "https://store.steampowered.com/app/2516360/",
+            " ",
+            "Click anywhere to visit the above Steam store page.",
+            " ",
+            " ",
+            " "
         };
         public void Show()
         {
@@ -137,8 +138,14 @@ namespace YTPPlusPlusPlus
                     {
                         if (MouseInput.MouseState.LeftButton == ButtonState.Pressed && MouseInput.LastMouseState.LeftButton == ButtonState.Released)
                         {
-                            accepted = true;
                             GlobalContent.GetSound("Select").Play(int.Parse(SaveData.saveValues["SoundEffectVolume"]) / 100f, 0f, 0f);
+                            // Open steam store page url
+                            ProcessStartInfo psi = new ProcessStartInfo
+                            {
+                                FileName = "https://store.steampowered.com/app/2516360/Nonsensical_Video_Generator/",
+                                UseShellExecute = true
+                            };
+                            Process.Start(psi);
                         }
                     }
                 }
